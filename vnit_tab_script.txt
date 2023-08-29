@@ -1,0 +1,37 @@
+CREATE TABLE `item` (
+  `itcode` int(10) NOT NULL AUTO_INCREMENT,
+  `itname` varchar(100) DEFAULT NULL,
+  `itrate` decimal(5,2) DEFAULT NULL,
+  PRIMARY KEY (`itcode`)
+) ;
+
+CREATE TABLE `customer` (
+  `ccode` int(10) NOT NULL AUTO_INCREMENT,
+  `cname` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`ccode`)
+) ;
+
+CREATE TABLE `billtype` (
+  `billid` int(10) NOT NULL AUTO_INCREMENT,
+  `billtp` int(1) DEFAULT NULL,
+  `itcode` int(10) DEFAULT NULL,
+  PRIMARY KEY (`billid`)
+) ;
+
+CREATE TABLE `billhdr` (
+  `billno` int(10) NOT NULL AUTO_INCREMENT,
+  `billdt` date DEFAULT NULL,
+  `billtp` int(1) DEFAULT NULL,
+  `ccode` int(10) DEFAULT NULL,
+  `billamt` decimal(15,2) DEFAULT NULL,
+  PRIMARY KEY (`billno`)
+) ;
+
+CREATE TABLE `billdtl` (
+  `billno` int(10) NOT NULL,
+  `itcode` int(10) NOT NULL,
+  `itrate` decimal(5,2) DEFAULT NULL,
+  `qty` int(10) DEFAULT NULL,
+  `value` decimal(15,2) DEFAULT NULL,
+  PRIMARY KEY (`billno`,`itcode`)
+) ;
