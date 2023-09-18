@@ -12,8 +12,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import main.java.com.vnit.api.file.template.EntityTemplate;
+import main.java.com.vnit.api.file.t1Template.EntityTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
+import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModel {
     ColumnObjectList c2=new ColumnObjectList();
@@ -75,31 +77,33 @@ public class SimpleDataModel {
     }
     
     public String  makeEntity(String name) throws SQLException{  
-        //to merge all the method and get complete code for entity file
-        this.table_name=name;
-        String package_name="package "+map.get("package_prefix")+".entity;\n";
-        String all_imports="";
-        String mainEntity=this.mainEntity();
-        String declaration_code="";
-        System.out.println("Reach:3");
-        for(int i=0;i<this.packageEntry().size();i++){
-            all_imports=all_imports+this.packageEntry().get(i)+"\n";
-        }
+//        //to merge all the method and get complete code for entity file
+//        this.table_name=name;
+//        String package_name="package "+map.get("package_prefix")+".entity;\n";
+//        String all_imports="";
+//        String mainEntity=this.mainEntity();
+//        String declaration_code="";
+//        System.out.println("Reach:3");
+//        for(int i=0;i<this.packageEntry().size();i++){
+//            all_imports=all_imports+this.packageEntry().get(i)+"\n";
+//        }
+//
+//        for (int i=0;i<this.setTlist().size();i++) {
+//            if(tlist.get(i).getCheckvalue()==true){
+//                  declaration_code=declaration_code+decTerm(map.get("primarykey"),tlist.get(i).getColname(), tlist.get(i).getJavadatatype())+ createsetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype()) + creategetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype());
+//              }else{
+//                   declaration_code=declaration_code+decTerm_1(map.get("notprimarykey"),tlist.get(i).getColname(), tlist.get(i).getJavadatatype()) + createsetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype())+ creategetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype());
+//              }
+//            
+//        }
+//        
+//        String completecode=package_name+all_imports+mainEntity+declaration_code+"\n}";
+//        return completecode;                //this code is returned to makeEntity file in Utility Class.
+// 
 
-        for (int i=0;i<this.setTlist().size();i++) {
-            if(tlist.get(i).getCheckvalue()==true){
-                  declaration_code=declaration_code+decTerm(map.get("primarykey"),tlist.get(i).getColname(), tlist.get(i).getJavadatatype())+ createsetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype()) + creategetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype());
-              }else{
-                   declaration_code=declaration_code+decTerm_1(map.get("notprimarykey"),tlist.get(i).getColname(), tlist.get(i).getJavadatatype()) + createsetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype())+ creategetMethod( tlist.get(i).getColname(), tlist.get(i).getJavadatatype());
-              }
-            
-        }
-        
-        String completecode=package_name+all_imports+mainEntity+declaration_code+"\n}";
-        return completecode;                //this code is returned to makeEntity file in Utility Class.
-        
+            ArrayList<Object> columns = DbUtility.columns;
+            return getEntityFile(columns);
     }
-    
     
      public String getEntityFile(ArrayList<Object> columns) {
         EntityTemplate entityTemplate = new EntityTemplate();
@@ -119,9 +123,4 @@ public class SimpleDataModel {
 
         return template;
     }
-
-
-    
-  
-  
 }

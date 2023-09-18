@@ -27,7 +27,6 @@ public class DBConnection {
                     Map<String,String> map_1=new HashMap<>();
                     u2.setMap(map_1);
                     try {
-                        System.out.println(" db url "+map_1.get("db_url"));
 			myConn = DriverManager.getConnection(map_1.get("db_url"),map_1.get("db_username") , map_1.get("db_password"));               
 			if(myConn!=null){
                            successConnection();   

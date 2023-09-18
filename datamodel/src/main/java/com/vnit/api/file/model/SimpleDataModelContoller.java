@@ -11,8 +11,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import main.java.com.vnit.api.file.template.ControllerTemplate;
+import main.java.com.vnit.api.file.t1Template.ControllerTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
+import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelContoller {
     ColumnObjectList c2=new ColumnObjectList();
@@ -125,16 +127,20 @@ map.get("jsonobject")+
      
      
      public String makeController(String name) throws SQLException{//make controller file 
-         this.table_name=name;
-         String package_name="package "+map.get("package_prefix")+".controller;\n";
-         String all_imports="";
-         String mainController=this.mainController(map.get("model_suffix"),map.get("repo_suffix"));
-         for(int i=0;i<this.packageEntryController().size();i++){
-            all_imports=all_imports+this.packageEntryController().get(i)+"\n";
-        }
-                 
-               return package_name+all_imports+mainController+this.createContoller(map.get("model_suffix"))+this.deleteController(map.get("model_suffix"))+this.getController(map.get("model_suffix"))+"\n}";
-         
+//         this.table_name=name;
+//         String package_name="package "+map.get("package_prefix")+".controller;\n";
+//         String all_imports="";
+//         String mainController=this.mainController(map.get("model_suffix"),map.get("repo_suffix"));
+//         for(int i=0;i<this.packageEntryController().size();i++){
+//            all_imports=all_imports+this.packageEntryController().get(i)+"\n";
+//        }
+//                 
+//               return package_name+all_imports+mainController+this.createContoller(map.get("model_suffix"))+this.deleteController(map.get("model_suffix"))+this.getController(map.get("model_suffix"))+"\n}";
+        
+            ArrayList<Object> columns = DbUtility.columns;
+            String primaryColumnName = DbUtility.primaryKeyColumn;
+            return getControllerFile(columns, primaryColumnName);
+
      }
      
 //     public static void main(String args[]) throws SQLException{

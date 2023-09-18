@@ -49,6 +49,7 @@ Map<String, String> map = new HashMap<>();
 			}
 			
 			if (error.entrySet().isEmpty()) {
+                                                                    System.out.println(body);
 				status = repo.postItem(body);
 			}
 		} catch (Exception ex) {

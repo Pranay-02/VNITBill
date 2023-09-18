@@ -8,8 +8,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import main.java.com.vnit.api.file.template.TSTemplate;
+import main.java.com.vnit.api.file.t1Template.TSTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
+import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelTS {
     ColumnObjectList c2=new ColumnObjectList();
@@ -255,18 +257,33 @@ public class SimpleDataModelTS {
     }
  
     public String makeTSFile(String name) throws SQLException{
-         this.table_name=name;
-         List<ColumnObject> list=this.setTlist();
-       return map.get("tspackage")+this.componentString()+this.ts1(list)+this.ts2(list)+this.ts3(list)+this.ts4(list)+this.ts5(list)+this.ts6(list);
-   }
+//         this.table_name=name;
+//         List<ColumnObject> list=this.setTlist();
+//       return map.get("tspackage")+this.componentString()+this.ts1(list)+this.ts2(list)+this.ts3(list)+this.ts4(list)+this.ts5(list)+this.ts6(list);
+  
+            ArrayList<Object> columns = DbUtility.columns;
+            String columnName = DbUtility.primaryKeyColumn;
+            return generateTSFile(columns, columnName);
+    
+    }
      
-     public String generateTSFile(ArrayList<Object> columns) {
+     public String generateTSFile(ArrayList<Object> columns, String columnName) {
         TSTemplate tsTemplate = new TSTemplate();
         ProcessSubstitution ps = new ProcessSubstitution();
          
          String template = "";
-        template += tsTemplate.getTSString(columns);
+        template += tsTemplate.getPart1();
+        template += tsTemplate.getPart2(columns);
+        template += tsTemplate.getPart3();
+        template += tsTemplate.getPart4(columns);
+        template += tsTemplate.getPart5(columns);
+        template += tsTemplate.getPart6();
+        template += tsTemplate.getRowData();
+        template += tsTemplate.getSave();
+        template += tsTemplate.getDelete(columnName);
+        template += tsTemplate.getClosingBracket();
         template = ps.processTemplate(template);
+
         return template;
     }
         

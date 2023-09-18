@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.java.com.vnit.api.file.template;
+package main.java.com.vnit.api.file.t1Template;
 
 /**
  *
@@ -14,7 +14,8 @@ public class RepoTemplate {
         String temp = "";
 
         temp += "^00$01$m:constantsMap:repo_package_name$^" + "\n\n";
-        temp += "^00$01$m:constantsMap:repo_imports$^" + "\n\n";
+        temp += "^00$01$m:constantsMap:repo_imports$^" + "\n";
+        temp += "import com.vnit.api.entity.^$00$01$m:constantsMap:cap_table_name$^Mst;" + "\n\n";
         temp += "@Transactional\n@Repository\n";
         temp += "public class "  + "^$00$01$m:constantsMap:cap_table_name$^" + "Repo {\n\n";
         temp += "@Autowired\n";
@@ -51,13 +52,13 @@ public class RepoTemplate {
         
         temp += "\ttry {\n";
         temp += "\t\t" + "^$00$01$m:constantsMap:cap_table_name$^" + "Mst data = get" + "^$00$01$m:constantsMap:cap_table_name$^";
-        temp += "(" + "^$00$01$m:constantsMap:table_name$^" + ".get" + "^00$01$m2:fld:" + columnName + ":column_name$^()" + ");\n";
+        temp += "(" + "^$00$01$m:constantsMap:table_name$^" + ".get" + "^00$01$m2:fld:" + columnName + ":column_name$^" + "());\n";
         temp += "\t\tif(data == null)\n";
         temp += "\t\t\tem.persist(^$00$01$m:constantsMap:table_name$^);\n";
         temp += "\t\telse\n";
         temp += "\t\t\tem.merge(^$00$01$m:constantsMap:table_name$^);\n";
         temp += "\t\tem.flush();\n";
-        temp += "\t\treturn " + "^$00$01$m:constantsMap:table_name$^" + ".get" + "^00$01$m2:fld:" + columnName + ":column_name$^();\n"; 
+        temp += "\t\treturn " + "^$00$01$m:constantsMap:table_name$^" + ".get" + "^00$01$m2:fld:" + columnName + ":column_name$^" + "();\n"; 
 
         temp += "\t} catch (Exception ex) {\n";
         temp += "\t\tex.printStackTrace();\n";

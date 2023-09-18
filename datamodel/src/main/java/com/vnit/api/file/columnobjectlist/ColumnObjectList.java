@@ -51,7 +51,7 @@ public class ColumnObjectList {
                 Utility u2=new Utility();
                 Map<String,String> map_1=new HashMap<>();
                 u2.setMap(map_1);
-                
+                               
                     try {
                             Statement statement = myConn_check.createStatement();
                             String query= "Select * from "+table_name;

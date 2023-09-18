@@ -14,7 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import main.java.com.vnit.api.file.template.RepoTemplate;
+import main.java.com.vnit.api.file.t1Template.RepoTemplate;
+import main.java.com.vnit.api.file.utility.DbUtility;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 
 public class SimpleDataModelRepo {
@@ -105,17 +106,21 @@ public class SimpleDataModelRepo {
     }
     
     public String makeRepo(String name) throws SQLException{//to merge all the method and get complete code for repo file
-        this.table_name=name;
-        String package_name="package "+map.get("package_prefix")+".repo;\n";
-        String all_imports="";
-        String mainEntity=this.mainEntityRepo(map.get("model_suffix"),map.get("repo_suffix"));
+//        this.table_name=name;
+//        String package_name="package "+map.get("package_prefix")+".repo;\n";
+//        String all_imports="";
+//        String mainEntity=this.mainEntityRepo(map.get("model_suffix"),map.get("repo_suffix"));
+//        
+//         for(int i=0;i<this.packageEntryRepo().size();i++){
+//            all_imports=all_imports+this.packageEntryRepo().get(i)+"\n";
+//        }
+//        String decalration_code=this.repogetMethod(map.get("model_suffix"))+this.repopostMethod(map.get("model_suffix"))+this.repodeleteMethod(map.get("model_suffix"));
+//        
+//        return package_name+all_imports+mainEntity+decalration_code+"\n}";//this code is returned to makeRepo file in Utility Class.
         
-         for(int i=0;i<this.packageEntryRepo().size();i++){
-            all_imports=all_imports+this.packageEntryRepo().get(i)+"\n";
-        }
-        String decalration_code=this.repogetMethod(map.get("model_suffix"))+this.repopostMethod(map.get("model_suffix"))+this.repodeleteMethod(map.get("model_suffix"));
-        
-        return package_name+all_imports+mainEntity+decalration_code+"\n}";//this code is returned to makeRepo file in Utility Class.
+          String columnName = DbUtility.primaryKeyColumn;
+          return getRepoFile(columnName);
+    
     }
     
      public String getRepoFile(String columnName) {

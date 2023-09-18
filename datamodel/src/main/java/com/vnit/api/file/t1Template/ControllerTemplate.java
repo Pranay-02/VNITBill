@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.java.com.vnit.api.file.template;
+package main.java.com.vnit.api.file.t1Template;
 
 import java.util.ArrayList;
+import main.java.com.vnit.api.file.col_object.Object;
 
 /**
  *

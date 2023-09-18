@@ -34,11 +34,13 @@ import com.vnit.api.entity.ScreenlistHeader;
 import com.vnit.api.entity.ScreenmappingconditionMst;
 import com.vnit.api.entity.ScreenmappingqueryMst;
 import com.vnit.api.file.columnobjectlist.ColumnObjectList;
+import com.vnit.api.file.dbConnection.DBConnection;
 import com.vnit.api.file.model.SimpleDataModel;
 import com.vnit.api.file.model.SimpleDataModelContoller;
 import com.vnit.api.file.model.SimpleDataModelHtml;
 import com.vnit.api.file.model.SimpleDataModelRepo;
 import com.vnit.api.file.model.SimpleDataModelTS;
+import com.vnit.api.file.utility.TestServlet;
 import com.vnit.api.repo.ScreenRepo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -47,6 +49,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.context.ApplicationContext;
 import javax.servlet.ServletContext;
+import main.java.com.vnit.api.file.utility.DbUtility;
+import main.java.com.vnit.api.file.utility.MapsUtil;
 import org.springframework.stereotype.Component;
 
 
@@ -895,13 +899,26 @@ public class CustomController {
 	}
         
         private String getTableName(String screenName) {
+            DbUtility dbUtility = new DbUtility();
+            DBConnection dbConn = new DBConnection();
+            
             ScreenMst screen = getScreenObject(screenName);
             List<ScreengroupMst> screenGroupList = screen.getScreengroup();
             String tableName = "";
             for(ScreengroupMst screenGroup : screenGroupList) {
                 tableName = screenGroup.getBasetable();
-                System.out.println("*****Base Table Name = " + tableName);
                 break;
+            }
+            
+            MapsUtil.constantsMap.put("table_name", tableName);
+            MapsUtil.constantsMap.put("cap_table_name", SimpleDataModel.nameCase(tableName));
+            
+            try {
+                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+                System.out.println("****Added to map");
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
             }
 
             return tableName;
@@ -909,7 +926,5 @@ public class CustomController {
         
         private ScreenMst getScreenObject(String screenName) {
             return ScreenController.map1.get(screenName);
-        }
-       
-        
+        } 
 }

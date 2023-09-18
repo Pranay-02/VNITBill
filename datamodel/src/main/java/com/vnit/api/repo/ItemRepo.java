@@ -31,8 +31,10 @@ public class ItemRepo {
 	public Integer postItem(ItemMst item) {
 		try {
 			ItemMst data = getItem(item.getItcode());
-			if (data == null)
-				em.persist(item);
+			if (data == null) {
+                                                        System.out.println("Null data found");
+                                                        em.persist(item);
+		                        }
 			else
 				em.merge(item);
 			

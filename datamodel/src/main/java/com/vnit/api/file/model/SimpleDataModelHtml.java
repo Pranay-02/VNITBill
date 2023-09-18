@@ -14,8 +14,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import main.java.com.vnit.api.file.template.HTMLTemplate;
+import main.java.com.vnit.api.file.t1Template.HTMLTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
+import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelHtml {
     ColumnObjectList c2=new ColumnObjectList();
@@ -261,9 +263,12 @@ public class SimpleDataModelHtml {
    }
 
    public String makeHtmlFile(String name) throws SQLException{
-       this.table_name=name;
-       List<ColumnObject> list=this.setTlist();
-       return this.inputhtml1(list)+this.inputhtml2(list)+this.inputhtml3(list);
+//       this.table_name=name;
+//       List<ColumnObject> list=this.setTlist();
+//       return this.inputhtml1(list)+this.inputhtml2(list)+this.inputhtml3(list);
+   
+        ArrayList<Object> columns = DbUtility.columns;
+        return getHtmlTemplate(columns);
    }
    
     public String getHtmlTemplate(ArrayList<Object> columns) {

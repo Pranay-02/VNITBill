@@ -23,12 +23,12 @@ public class ProcessSubstitution {
         for (int i = 0; i < hashStrings.size(); i++) {
             String hashString = hashStrings.get(i); 
             String substitutedString = "";
-            if(mapsUtil.substitutionMap.containsKey(hashString)) {
-                substitutedString = mapsUtil.substitutionMap.get(hashString);
+            if(MapsUtil.substitutionMap.containsKey(hashString)) {
+                substitutedString = MapsUtil.substitutionMap.get(hashString);
             }
             else {
                 substitutedString = processHash(hashString);
-                mapsUtil.substitutionMap.put(hashString, substitutedString);
+                MapsUtil.substitutionMap.put(hashString, substitutedString);
             }
 
             String var = "^" + hashString + "^";
@@ -41,7 +41,7 @@ public class ProcessSubstitution {
 
     public String processHash(String hashStrings) {
         String substiutedValue = "";
-        ArrayList<String> dollarStrings = ut.extractTokensByDollar(hashStrings);
+        ArrayList<String> dollarStrings = et.extractTokensByDollar(hashStrings);
         substiutedValue = processTypeOfSubstitution(dollarStrings);
     
         return substiutedValue;
@@ -99,7 +99,7 @@ public class ProcessSubstitution {
                 String parentMapString = semiColonStrings.get(1);
                 String keyOfParentMap = semiColonStrings.get(2);
                 String keyOfChildMap = semiColonStrings.get(3);
-
+                
                 Map<String, ?> parentmap = getMap(parentMapString);
                 Map<String, String> childMap = (Map<String, String>) parentmap.get(keyOfParentMap);
                 substitutedString = childMap.get(keyOfChildMap);
@@ -124,7 +124,7 @@ public class ProcessSubstitution {
 
     public Map<String, ?> getMap(String mapName) {
         try {
-            Class<?> declaringClass = mapsUtil.class;  
+            Class<?> declaringClass = MapsUtil.class;  
             Field field = declaringClass.getDeclaredField(mapName);
 
             @SuppressWarnings("unchecked")

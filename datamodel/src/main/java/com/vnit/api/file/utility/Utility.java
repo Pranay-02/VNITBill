@@ -26,7 +26,6 @@ public class Utility {
     
     public void  setMap(Map<String,String> map){//mapping the values from properties file 
               this.map=map;
-              System.out.println("path = " + TestServlet.contextpath);
               try(FileReader fileReader = new FileReader(TestServlet.contextpath+this.name)){
                     p.load(fileReader);
                     Iterator keyIterator = p.keySet().iterator();
