@@ -19,11 +19,11 @@ public class TSTemplate {
         temp += "^00$01$m:constantsMap:ts_imports$^" + "\n\n";
 
         temp += "@Component({\n"+
-            "\tselector: 'app-^$00$01$m:constantsMap:table_name$^-master',\n"+
-            "\ttemplateUrl: './^$00$01$m:constantsMap:table_name$^-master.component.html',\n"+
-            "\tstyleUrls: ['./^$00$01$m:constantsMap:table_name$^-master.component.css']\n"+
+            "\tselector: 'app-^$00$01$m:constantsMap:table_name$^',\n"+
+            "\ttemplateUrl: './^$00$01$m:constantsMap:table_name$^.component.html',\n"+
+            "\tstyleUrls: ['./^$00$01$m:constantsMap:table_name$^.component.css']\n"+
           "})\n\n"+
-          "export class ^$00$01$m:constantsMap:cap_table_name$^MasterComponent implements OnInit {\n"+
+          "export class ^$00$01$m:constantsMap:cap_table_name$^Component implements OnInit {\n"+
             "\t@ViewChild('f', { static: false }) form: NgForm;\n"+
             "\tmodel: any = {}\n"+
             "\tmodelOneArray: any = [];\n"+
@@ -104,6 +104,7 @@ public class TSTemplate {
 
       for(int i = 0; i < columns.size(); i++) {
         String columnName = columns.get(i).getColumnName();
+        if(columns.get(i).getColumnPrimaryKey()) continue;
         temp +=  "\t\tif (this.configService.isNullUndefined(this.model." + "^00$01$m2:fld:" + columnName + ":column_name$^" +  ") === false) {\n"+
                   "\t\t\tthis.notificationServices.showNotification(\'error\', \"^00$01$m2:fld:" + columnName + ":column_name$^ Required\");\n"+
                   "\t\t\tdocument.getElementById(\"^00$01$m2:fld:" + columnName + ":column_name$^\").focus();\n"+

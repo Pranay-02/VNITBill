@@ -1,20 +1,20 @@
 package com.vnit.api.repo;
 
 import javax.persistence.EntityManager;import javax.transaction.Transactional;import org.springframework.beans.factory.annotation.Autowired;import org.springframework.stereotype.Repository;
-import com.vnit.api.entity.StudentMst;
+import com.vnit.api.entity.CourseMst;
 
 @Transactional
 @Repository
-public class StudentRepo {
+public class CourseRepo {
 
 @Autowired
 EntityManager em;
 
-public StudentMst getStudent(Integer id) {
+public CourseMst getCourse(Integer id) {
 	try {
 		if(id == null)
 			return null;
-		return em.find(StudentMst.class, id);
+		return em.find(CourseMst.class, id);
 	} catch (Exception ex) {
 		ex.printStackTrace();
 	}
@@ -22,15 +22,15 @@ public StudentMst getStudent(Integer id) {
 	return null;
 }
 
-public Integer postStudent(StudentMst student) {
+public Integer postCourse(CourseMst course) {
 	try {
-		StudentMst data = getStudent(student.getstudentid());
+		CourseMst data = getCourse(course.getcourseid());
 		if(data == null)
-			em.persist(student);
+			em.persist(course);
 		else
-			em.merge(student);
+			em.merge(course);
 		em.flush();
-		return student.getstudentid();
+		return course.getcourseid();
 	} catch (Exception ex) {
 		ex.printStackTrace();
 	}
@@ -38,9 +38,9 @@ public Integer postStudent(StudentMst student) {
 	return 0;
 }
 
-public Integer deleteStudent(Integer id) {
+public Integer deleteCourse(Integer id) {
 	try {
-		StudentMst data = getStudent(id);
+		CourseMst data = getCourse(id);
 		if(data != null) {
 			em.remove(data);
 			em.flush();

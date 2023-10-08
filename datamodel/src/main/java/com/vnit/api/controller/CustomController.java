@@ -21,8 +21,11 @@ import com.google.gson.JsonParser;
 import com.vnit.api.common.RestUtil;
 import com.vnit.api.entity.BillHeader;
 import com.vnit.api.entity.BillTypeMst;
+import com.vnit.api.entity.CourseMst;
 import com.vnit.api.entity.CustomerMst;
+import com.vnit.api.entity.DepartmentMst;
 import com.vnit.api.entity.EventmasterMst;
+import com.vnit.api.entity.ExamMst;
 import com.vnit.api.entity.ItemMst;
 import com.vnit.api.entity.ScreenHeader;
 import com.vnit.api.entity.ScreenMst;
@@ -33,6 +36,7 @@ import com.vnit.api.entity.ScreenjoinconditionMst;
 import com.vnit.api.entity.ScreenlistHeader;
 import com.vnit.api.entity.ScreenmappingconditionMst;
 import com.vnit.api.entity.ScreenmappingqueryMst;
+import com.vnit.api.entity.StudentMst;
 import com.vnit.api.file.columnobjectlist.ColumnObjectList;
 import com.vnit.api.file.dbConnection.DBConnection;
 import com.vnit.api.file.model.SimpleDataModel;
@@ -100,7 +104,135 @@ public class CustomController {
 		return response.toString();
 	}
         
-        @SuppressWarnings("unchecked")
+        	@SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_student_list", produces = "application/json")
+	@ApiOperation(value = "Get student list", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getStudentList(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		
+		List<StudentMst> studentList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(name)) {
+				query ="select * from student order by studentid limit 10";
+				studentList = em.createNativeQuery(query, StudentMst.class).getResultList();
+			} else {
+				query ="select * from student where name like '%" + name + "%' order by studentid desc limit 10";
+				studentList = em.createNativeQuery(query, StudentMst.class).getResultList();
+			}
+			
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(studentList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		
+		return response.toString();
+	}
+        
+                  @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_department_list", produces = "application/json")
+	@ApiOperation(value = "Get department list", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getDepartmentList(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		
+		List<DepartmentMst> departmentList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(name)) {
+				query ="select * from department order by deptid limit 10";
+				departmentList = em.createNativeQuery(query, DepartmentMst.class).getResultList();
+			} else {
+				query ="select * from department where name like '%" + name + "%' order by deptid desc limit 10";
+				departmentList = em.createNativeQuery(query, DepartmentMst.class).getResultList();
+			}
+			
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(departmentList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		
+		return response.toString();
+	}
+        
+                  @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_course_list", produces = "application/json")
+	@ApiOperation(value = "Get course list", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getCourseList(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		
+		List<CourseMst> courseList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(name)) {
+				query ="select * from course order by courseid limit 10";
+				courseList = em.createNativeQuery(query, CourseMst.class).getResultList();
+			} else {
+				query ="select * from course where name like '%" + name + "%' order by courseid desc limit 10";
+				courseList = em.createNativeQuery(query, CourseMst.class).getResultList();
+			}
+			
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(courseList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		
+		return response.toString();
+	}
+        
+             	@SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_exam_list", produces = "application/json")
+	@ApiOperation(value = "Get exam list", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getExamList(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		
+		List<ExamMst> examList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(name)) {
+				query ="select * from exam order by examid limit 10";
+				examList = em.createNativeQuery(query, ExamMst.class).getResultList();
+			} else {
+				query ="select * from exam where subject like '%" + name + "%' order by examid desc limit 10";
+				examList = em.createNativeQuery(query, ExamMst.class).getResultList();
+			}
+			
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(examList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		
+		return response.toString();
+	}
+        
+                  @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/get_eventmaster_list", produces = "application/json")
 	@ApiOperation(value = "Get eventmaster list", httpMethod = "GET")

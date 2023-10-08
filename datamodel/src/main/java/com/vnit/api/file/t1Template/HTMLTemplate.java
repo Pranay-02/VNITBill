@@ -41,7 +41,7 @@ public String getFormPart1() {
         getTabs() +"\t\t\t<span style=\"color: red;\">*</span>\n" + 
         getTabs() + "\t\t</label>\n" + 
         getTabs() +"\t\t<div class=\"form-group\">\n" + 
-        getTabs() + "\t\t\t<input type=\"number\" class=\"form-control input-sm\" " +  
+        getTabs() + "\t\t\t<input type=\"text\" class=\"form-control input-sm\" " +  
         "id=\"^00$01$m2:fld:" + columnName + ":column_name$^\" name=\"^00$01$m2:fld:" + columnName + ":column_name$^\"\n" +  
         getTabs() + "\t\t\t[(ngModel)]=\"model.^00$01$m2:fld:" + columnName + ":column_name$^\" #^00$01$m2:fld:" + columnName + ":column_name$^=\"ngModel\" " + 
                     "placeholder=\"^$00$01$m:constantsMap:cap_table_name$^ ^00$01$m2:fld:" + columnName + ":column_name$^\"\n" +
