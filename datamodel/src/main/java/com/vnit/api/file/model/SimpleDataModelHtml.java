@@ -4,7 +4,9 @@ import java.util.List;
 import com.vnit.api.file.utility.Utility;
 import com.vnit.api.file.col_object.ColumnObject;
 import com.vnit.api.file.columnobjectlist.ColumnObjectList;
+import com.vnit.api.file.dbConnection.DBConnection;
 import static com.vnit.api.file.model.SimpleDataModel.nameCase;
+import com.vnit.api.file.utility.TestServlet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.util.logging.Logger;
 import main.java.com.vnit.api.file.t1Template.HTMLTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.t2Template.S2HtmlTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelHtml {
@@ -262,13 +265,23 @@ public class SimpleDataModelHtml {
        return start+search+map.get("refresh_button")+start1+mid+mid1+mid2+mid3+map.get("edit_button")+map.get("delete_button")+end+map.get("save_cancel_button")+map.get("confirm_delete_dialog_box");
    }
 
-   public String makeHtmlFile(String name) throws SQLException{
+   public String makeHtmlFile(String tableName) throws SQLException{
 //       this.table_name=name;
 //       List<ColumnObject> list=this.setTlist();
 //       return this.inputhtml1(list)+this.inputhtml2(list)+this.inputhtml3(list);
    
-        ArrayList<Object> columns = DbUtility.columns;
-        return getHtmlTemplate(columns);
+            DbUtility dbUtility = new DbUtility();
+            DBConnection dbConn = new DBConnection();
+  
+            try {
+                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }        
+
+            ArrayList<Object> columns = dbUtility.getColumns();
+            return getHtmlTemplate(columns);
    }
    
     public String getHtmlTemplate(ArrayList<Object> columns) {
@@ -313,6 +326,44 @@ public class SimpleDataModelHtml {
 
         return template;
 
+    }
+    
+    public String makeS2HtmlFile(ArrayList<String> tableNames) throws SQLException{//make controller file 
+            DbUtility dbUtility1 = new DbUtility();
+            DbUtility dbUtility2 = new DbUtility();
+
+            DBConnection dbConn = new DBConnection();
+            String tableName1 = tableNames.get(0);
+            String tableName2 = tableNames.get(1);
+            try {
+                dbUtility1.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility1.getColumns(tableName1, dbConn.setConnection(null));
+                
+                dbUtility2.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility2.getColumns(tableName2, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }
+
+            ArrayList<Object> columns1 = dbUtility1.getColumns();
+            ArrayList<String> PK1 = dbUtility1.getPKColumns();
+            
+            ArrayList<Object> columns2 = dbUtility2.getColumns();
+            ArrayList<String> PK2 = dbUtility2.getPKColumns();
+            return getS2HtmlTemplate(columns1, columns2, PK1);
+    }
+    
+    public String getS2HtmlTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1) {
+        ProcessSubstitution ps = new ProcessSubstitution();
+        S2HtmlTemplate s2html = new S2HtmlTemplate();
+        
+        String template = s2html.getFormPart1(columns1);
+        template += s2html.getFormPart5(columns2, PK1);
+        template += s2html.getFormPart2(columns1);
+        template += s2html.getSaveDelete();
+        template = ps.processTemplate(template);
+
+        return template;
     }
    
 

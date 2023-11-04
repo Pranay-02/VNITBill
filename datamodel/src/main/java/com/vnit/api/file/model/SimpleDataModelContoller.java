@@ -4,7 +4,9 @@ import java.util.List;
 import com.vnit.api.file.utility.Utility;
 import com.vnit.api.file.col_object.ColumnObject;
 import com.vnit.api.file.columnobjectlist.ColumnObjectList;
+import com.vnit.api.file.dbConnection.DBConnection;
 import static com.vnit.api.file.model.SimpleDataModel.nameCase;
+import com.vnit.api.file.utility.TestServlet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +16,7 @@ import java.util.logging.Logger;
 import main.java.com.vnit.api.file.t1Template.ControllerTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.t2Template.S2ControllerTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelContoller {
@@ -126,7 +129,7 @@ map.get("jsonobject")+
      }
      
      
-     public String makeController(String name) throws SQLException{//make controller file 
+     public String makeController(String tableName) throws SQLException{//make controller file 
 //         this.table_name=name;
 //         String package_name="package "+map.get("package_prefix")+".controller;\n";
 //         String all_imports="";
@@ -137,23 +140,28 @@ map.get("jsonobject")+
 //                 
 //               return package_name+all_imports+mainController+this.createContoller(map.get("model_suffix"))+this.deleteController(map.get("model_suffix"))+this.getController(map.get("model_suffix"))+"\n}";
         
-            ArrayList<Object> columns = DbUtility.columns;
-            String primaryColumnName = DbUtility.primaryKeyColumn;
-            return getControllerFile(columns, primaryColumnName);
+            
+            DbUtility dbUtility = new DbUtility();
+            DBConnection dbConn = new DBConnection();
+  
+            try {
+                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }
+
+            ArrayList<Object> columns = dbUtility.getColumns();
+            ArrayList<String> PKs = dbUtility.getPKColumns();
+            return getControllerFile(columns, PKs.get(0));
 
      }
      
-//     public static void main(String args[]) throws SQLException{
-//        Map<String,String> map=new HashMap<>();
-//        SimpleDataModelContoller s1=new SimpleDataModelContoller(map);
-//        Utility u3=new Utility();
-//        u3.makeControllerFile(s1.makeController());
-//        
-//    }
+     
      
      public String getControllerFile(ArrayList<Object> columns, String primaryColumnName) {
        ControllerTemplate cTemplate = new ControllerTemplate();
-               ProcessSubstitution ps = new ProcessSubstitution();
+       ProcessSubstitution ps = new ProcessSubstitution();
 
          String template = "";
         
@@ -162,6 +170,56 @@ map.get("jsonobject")+
         template += cTemplate.getControllerDeleteTemplate(primaryColumnName);
         template += cTemplate.getControllerGetTemplate(primaryColumnName);
         template += cTemplate.getClosingBracket();
+        template = ps.processTemplate(template);
+        
+        return template;
+    }
+     
+    public String makeS2Controller(ArrayList<String> tableNames) throws SQLException{//make controller file 
+            DbUtility dbUtility1 = new DbUtility();
+            DbUtility dbUtility2 = new DbUtility();
+
+            DBConnection dbConn = new DBConnection();
+            String tableName1 = tableNames.get(0);
+            String tableName2 = tableNames.get(1);
+            try {
+                dbUtility1.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility1.getColumns(tableName1, dbConn.setConnection(null));
+                
+                dbUtility2.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility2.getColumns(tableName2, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }
+
+            ArrayList<Object> columns1 = dbUtility1.getColumns();
+            ArrayList<String> PK1 = dbUtility1.getPKColumns();
+            
+            ArrayList<Object> columns2 = dbUtility2.getColumns();
+            ArrayList<String> PK2 = dbUtility2.getPKColumns();
+            return getS2ControllerTemplate(columns1, columns2, PK1);
+    }
+    
+    
+     public String getS2ControllerTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> primaryColumns1) {
+        S2ControllerTemplate s2c = new S2ControllerTemplate();
+        ProcessSubstitution ps = new ProcessSubstitution();
+
+         String template = "";
+        String primaryColumnName = "";
+
+        for(int i = 0; i < columns2.size(); i++) {
+            if(columns2.get(i).getColumnPrimaryKey() && !primaryColumns1.contains(columns2.get(i).getColumnName())) {
+                primaryColumnName = columns2.get(i).getColumnName();
+            }
+        }
+
+        template += s2c.getControllerFieldTemplate();
+        template += s2c.getControllerCreateTemplate(columns1, primaryColumnName);
+        template += s2c.getControllerDeleteTemplate(primaryColumns1.get(0));
+        template += s2c.getControllerGetTemplate(primaryColumns1.get(0));
+        template += s2c.getCustomError();
+        template += s2c.getClosingBracket();
         template = ps.processTemplate(template);
         
         return template;

@@ -27,6 +27,7 @@ import com.vnit.api.entity.DepartmentMst;
 import com.vnit.api.entity.EventmasterMst;
 import com.vnit.api.entity.ExamMst;
 import com.vnit.api.entity.ItemMst;
+import com.vnit.api.entity.Scholar;
 import com.vnit.api.entity.ScreenHeader;
 import com.vnit.api.entity.ScreenMst;
 import com.vnit.api.entity.ScreeneventMst;
@@ -37,23 +38,17 @@ import com.vnit.api.entity.ScreenlistHeader;
 import com.vnit.api.entity.ScreenmappingconditionMst;
 import com.vnit.api.entity.ScreenmappingqueryMst;
 import com.vnit.api.entity.StudentMst;
-import com.vnit.api.file.columnobjectlist.ColumnObjectList;
-import com.vnit.api.file.dbConnection.DBConnection;
 import com.vnit.api.file.model.SimpleDataModel;
 import com.vnit.api.file.model.SimpleDataModelContoller;
 import com.vnit.api.file.model.SimpleDataModelHtml;
 import com.vnit.api.file.model.SimpleDataModelRepo;
 import com.vnit.api.file.model.SimpleDataModelTS;
-import com.vnit.api.file.utility.TestServlet;
 import com.vnit.api.repo.ScreenRepo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.context.ApplicationContext;
-import javax.servlet.ServletContext;
-import main.java.com.vnit.api.file.utility.DbUtility;
 import main.java.com.vnit.api.file.utility.MapsUtil;
 import org.springframework.stereotype.Component;
 
@@ -490,6 +485,59 @@ public class CustomController {
 		
 		return response.toString();
 	}
+       
+        @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_screenid_from_screenname", produces = "application/json")
+	@ApiOperation(value = "Get screenlist", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getScreenType_1(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		
+		List screenList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+                                                    query ="select screentype from screen where screenname = '" + name + "';";
+                                                    screenList = em.createNativeQuery(query).getResultList();
+                                                    System.out.println(screenList);
+                                                    response.add("data", JsonParser.parseString(mapper.writeValueAsString(screenList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		return response.toString();
+	}
+       
+        @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_tableNames_from_screenname", produces = "application/json")
+	@ApiOperation(value = "Get screenlist", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getTableNames(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		
+		List screenList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+                                                    query ="select basetable from screen, screengroup where screen.screenid = screengroup.screenid and screen.screenname = '" + name + "';";
+                                                    screenList = em.createNativeQuery(query).getResultList();
+                                                    System.out.println(screenList);
+                                                    response.add("data", JsonParser.parseString(mapper.writeValueAsString(screenList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		return response.toString();
+	}
+       
         
          @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
@@ -613,6 +661,41 @@ public class CustomController {
 				billArray.add(JsonParser.parseString(bill.toString()));
 			}
 			response.add("data", billArray);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		
+		return response.toString();
+	}
+        
+        @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_scholar_list", produces = "application/json")
+	@ApiOperation(value = "Get scholar list", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getScholarList(@RequestParam String scholarid) {
+		JsonObject response = new JsonObject();
+		
+		List<Scholar> scholarList = new ArrayList<>();
+		String query = "";
+		try {
+			if (RestUtil.isNull(scholarid)) {
+				query ="select * from scholar order by scholarid limit 10";
+				scholarList = em.createNativeQuery(query,Scholar.class).getResultList();
+			}else {
+				query ="select * from s cholar where scholarid like '%" + scholarid + "%' order by scholarid desc limit 10";
+				scholarList = em.createNativeQuery(query,Scholar.class).getResultList();
+			}
+			
+			JsonArray scholarArray = new JsonArray();
+			for (Scholar scholar : scholarList) {
+				scholarArray.add(JsonParser.parseString(scholar.toString()));
+			}
+			response.add("data", scholarArray);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			response.add("data", new JsonArray());
@@ -955,13 +1038,109 @@ public class CustomController {
 		JsonObject response = new JsonObject();
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModel s1=new SimpleDataModel(map);
-                String tableName = getTableName(screenname);
                 
-                response.addProperty("data", s1.makeEntity(tableName));
-		response.addProperty("code", 200);
-		response.addProperty("status", "Success");
-		return response.toString();
-	}
+                            String tableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeEntity(tableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                
+                return response.toString();
+        }
+        
+                @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_entity1_file", produces = "application/json")
+	@ApiOperation(value = "Get entity file", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getEntity1File(@RequestParam String screenname) throws SQLException {
+		JsonObject response = new JsonObject();
+                        Map<String,String> map=new HashMap<>();
+                        SimpleDataModel s1=new SimpleDataModel(map);
+                
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Entity(names, 1));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                          
+                
+                return response.toString();
+        }
+        
+                    @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_entity2_file", produces = "application/json")
+	@ApiOperation(value = "Get entity file", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getEntity2File(@RequestParam String screenname) throws SQLException {
+		JsonObject response = new JsonObject();
+                        Map<String,String> map=new HashMap<>();
+                        SimpleDataModel s1=new SimpleDataModel(map);
+                
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Entity(names, 2));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                          
+                
+                return response.toString();
+        }
+        
+                    @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_entity3_file", produces = "application/json")
+	@ApiOperation(value = "Get entity file", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getEntity3File(@RequestParam String screenname) throws SQLException {
+		JsonObject response = new JsonObject();
+                        Map<String,String> map=new HashMap<>();
+                        SimpleDataModel s1=new SimpleDataModel(map);
+                
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Entity(names, 3));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                          
+                
+                return response.toString();
+        }
+        
+                    @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_entity4_file", produces = "application/json")
+	@ApiOperation(value = "Get entity file", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getEntity4File(@RequestParam String screenname) throws SQLException {
+		JsonObject response = new JsonObject();
+                        Map<String,String> map=new HashMap<>();
+                        SimpleDataModel s1=new SimpleDataModel(map);
+                
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Entity(names, 4));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                          
+                
+                return response.toString();
+        }
+        
+                    @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_entity5_file", produces = "application/json")
+	@ApiOperation(value = "Get entity file", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getEntity5File(@RequestParam String screenname) throws SQLException {
+		JsonObject response = new JsonObject();
+                        Map<String,String> map=new HashMap<>();
+                        SimpleDataModel s1=new SimpleDataModel(map);
+                
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Entity(names, 5));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                          
+                
+                return response.toString();
+        }
         
         @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
@@ -972,13 +1151,25 @@ public class CustomController {
 		JsonObject response = new JsonObject();
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModelContoller s1=new SimpleDataModelContoller(map);
-                String tableName = getTableName(screenname);
-
-                response.addProperty("data", s1.makeController(tableName));
-		response.addProperty("code", 200);
-		response.addProperty("status", "Success");
-		return response.toString();
-	}
+                
+                switch(getScreenType(screenname)) {
+                    case 1 : 
+                            String tableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeController(tableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                            
+                    case 2 :
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Controller(names));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                }
+                
+               	return response.toString();
+        }
         
         @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
@@ -989,13 +1180,25 @@ public class CustomController {
 		JsonObject response = new JsonObject();
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModelRepo s1=new SimpleDataModelRepo(map);
-                String tableName = getTableName(screenname);
+               
+                switch(getScreenType(screenname)) {
+                    case 1 : 
+                            String tableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeRepo(tableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                            
+                    case 2 :
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Repo(names));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                             break;
+                }
                 
-                response.addProperty("data", s1.makeRepo(tableName));
-		response.addProperty("code", 200);
-		response.addProperty("status", "Success");
-		return response.toString();
-	}
+            	return response.toString();
+        }
         
         @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
@@ -1006,13 +1209,29 @@ public class CustomController {
 		JsonObject response = new JsonObject();
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModelHtml s1=new SimpleDataModelHtml(map);
-                String tableName = getTableName(screenname);
                 
-                response.addProperty("data", s1.makeHtmlFile(tableName));
-		response.addProperty("code", 200);
-		response.addProperty("status", "Success");
-		return response.toString();
+                 switch(getScreenType(screenname)) {
+                    case 1 : 
+                            String tableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeHtmlFile(tableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                            
+                    case 2 :
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2HtmlFile(names));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            
+                            break;
+
+                }
+                
+             	return response.toString();
 	}
+       
+        
         @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/get_ts_file", produces = "application/json")
@@ -1022,18 +1241,33 @@ public class CustomController {
 		JsonObject response = new JsonObject();
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModelTS s1=new SimpleDataModelTS(map);
-                String tableName = getTableName(screenname);
+                    
+                switch(getScreenType(screenname)) {
+                    case 1 : 
+                            String tableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeTSFile(tableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                            
+                    case 2 :
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2TSFile(names));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+            }
                 
-                response.addProperty("data", s1.makeTSFile(tableName));
-		response.addProperty("code", 200);
-		response.addProperty("status", "Success");
-		return response.toString();
-	}
+                    return response.toString();
+            }
         
-        private String getTableName(String screenName) {
-            DbUtility dbUtility = new DbUtility();
-            DBConnection dbConn = new DBConnection();
-            
+        private int getScreenType(String screenName) {
+             ScreenMst screen = getScreenObject(screenName);
+             int x = screen.getScreentype();
+             return x;
+        }
+        
+        private String getOneTableName(String screenName) {          
             ScreenMst screen = getScreenObject(screenName);
             List<ScreengroupMst> screenGroupList = screen.getScreengroup();
             String tableName = "";
@@ -1044,16 +1278,25 @@ public class CustomController {
             
             MapsUtil.constantsMap.put("table_name", tableName);
             MapsUtil.constantsMap.put("cap_table_name", SimpleDataModel.nameCase(tableName));
-            
-            try {
-                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
-                dbUtility.getColumns(tableName, dbConn.setConnection(null));
-                System.out.println("****Added to map");
-            } catch (SQLException ex) {
-                    System.out.println("****Error");
-            }
-
+   
             return tableName;
+        }
+        
+        private ArrayList<String> getTwoTableName(String screenName) {
+            ScreenMst screen = getScreenObject(screenName);
+            List<ScreengroupMst> screenGroupList = screen.getScreengroup();
+           ArrayList<String> tableNames = new ArrayList<>();
+            for(int i = 1; i <= screenGroupList.size(); i++) { 
+                ScreengroupMst screenGroup = screenGroupList.get(i-1);
+                String str1 = screenGroup.getBasetable();
+                System.out.println("tableName" + i + " = " + str1);
+                tableNames.add(str1);
+                MapsUtil.constantsMap.put("table_name" + i, str1);
+                MapsUtil.constantsMap.put("cap_table_name" + i, SimpleDataModel.nameCase(str1));
+ 
+            }
+            
+            return tableNames;
         }
         
         private ScreenMst getScreenObject(String screenName) {

@@ -25,9 +25,9 @@ import main.java.com.vnit.api.file.col_object.Object;
  */
 public class DbUtility {
     
-    public static ArrayList<Object> columns =  new ArrayList<>();
-    public Set<String> primaryKeyColumns = new HashSet<>();
-    public static String primaryKeyColumn = "";
+    public ArrayList<Object> columns =  new ArrayList<>();
+    public ArrayList<String> primaryKeyColumns = new ArrayList<>();
+    public String primaryKeyColumn = "";
     
     public ArrayList<Object> getColumns(String tableName, Connection connection) {        
         try {
@@ -36,10 +36,8 @@ public class DbUtility {
             ResultSet columnDetails = metaData.getColumns(null, null, tableName, null);
 
             //get primary ket details
-            getPrimaryKeyColumns(metaData, tableName);
-            ArrayList<String> list = new ArrayList<>(primaryKeyColumns);
-            primaryKeyColumn = list.get(0);
-
+            primaryKeyColumns = getPrimaryKeyColumns(metaData, tableName);
+            
             // Process and print the column details
             while (columnDetails.next()) {
                 String columnName = columnDetails.getString("COLUMN_NAME");
@@ -53,7 +51,6 @@ public class DbUtility {
                 Object o = new Object(columnName, columnType, isPrimaryKey, columnSize, required);
                 if(!columns.contains(o)) {
                     columns.add(o);
-                    System.out.println("Added to columns");
                 }
 
                 Map<String, String> fld_map = new HashMap<>();
@@ -73,7 +70,7 @@ public class DbUtility {
         return columns;
     }
 
-    public Set<String> getPrimaryKeyColumns(DatabaseMetaData metaData, String tableName) {    
+    public ArrayList<String> getPrimaryKeyColumns(DatabaseMetaData metaData, String tableName) {    
         try {
             ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(null, null, tableName);
 
@@ -91,6 +88,14 @@ public class DbUtility {
 
     public String getDBVariableMapping(String dbVariable) {
         return MapsUtil.variableMap.get(dbVariable);
+    }
+    
+    public ArrayList<Object> getColumns() {
+        return columns;
+    }
+    
+    public ArrayList<String> getPKColumns() {
+        return primaryKeyColumns;
     }
     
     public void fillMap(String filePath) {

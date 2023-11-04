@@ -4,17 +4,22 @@ import java.util.List;
 import com.vnit.api.file.utility.Utility;
 import com.vnit.api.file.col_object.ColumnObject;
 import com.vnit.api.file.columnobjectlist.ColumnObjectList;
+import com.vnit.api.file.dbConnection.DBConnection;
 import static com.vnit.api.file.model.SimpleDataModel.nameCase;
+import com.vnit.api.file.utility.TestServlet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import main.java.com.vnit.api.file.t1Template.RepoTemplate;
+import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.t2Template.S2RepoTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 
@@ -105,7 +110,7 @@ public class SimpleDataModelRepo {
             return check;
     }
     
-    public String makeRepo(String name) throws SQLException{//to merge all the method and get complete code for repo file
+    public String makeRepo(String tableName) throws SQLException{//to merge all the method and get complete code for repo file
 //        this.table_name=name;
 //        String package_name="package "+map.get("package_prefix")+".repo;\n";
 //        String all_imports="";
@@ -118,8 +123,19 @@ public class SimpleDataModelRepo {
 //        
 //        return package_name+all_imports+mainEntity+decalration_code+"\n}";//this code is returned to makeRepo file in Utility Class.
         
-          String columnName = DbUtility.primaryKeyColumn;
-          return getRepoFile(columnName);
+            DbUtility dbUtility = new DbUtility();
+            DBConnection dbConn = new DBConnection();
+  
+            try {
+                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }        
+
+
+          ArrayList<String> columnName = dbUtility.getPKColumns();
+          return getRepoFile(columnName.get(0));
     
     }
     
@@ -134,6 +150,56 @@ public class SimpleDataModelRepo {
         template += rTemplate.postObjectTemplate(columnName);
         template += rTemplate.deleteObjectTemplate();
         template += rTemplate.getClosingBracket();
+
+        template = ps.processTemplate(template);
+
+        return template;
+    }
+     
+         public String makeS2Repo(ArrayList<String> tableNames) throws SQLException{//make controller file 
+            DbUtility dbUtility1 = new DbUtility();
+            DbUtility dbUtility2 = new DbUtility();
+
+            DBConnection dbConn = new DBConnection();
+            String tableName1 = tableNames.get(0);
+            String tableName2 = tableNames.get(1);
+            try {
+                dbUtility1.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility1.getColumns(tableName1, dbConn.setConnection(null));
+                
+                dbUtility2.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility2.getColumns(tableName2, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }
+
+            ArrayList<Object> columns1 = dbUtility1.getColumns();
+            ArrayList<String> PK1 = dbUtility1.getPKColumns();
+            
+            ArrayList<Object> columns2 = dbUtility2.getColumns();
+            ArrayList<String> PK2 = dbUtility2.getPKColumns();
+            return getS2RepoTemplate(PK1, columns1, columns2);
+    }
+     
+     public String getS2RepoTemplate(ArrayList<String> primaryKey1, ArrayList<Object> columns1, ArrayList<Object> columns2) {
+        S2RepoTemplate s2r = new S2RepoTemplate();
+        ProcessSubstitution ps = new ProcessSubstitution();
+  
+        String template = "";
+        String primaryColumnName = "";
+
+        for(int i = 0; i < columns2.size(); i++) {
+            if(columns2.get(i).getColumnPrimaryKey() && !primaryKey1.contains(columns2.get(i).getColumnName())) {
+                primaryColumnName = columns2.get(i).getColumnName();
+            }
+        }
+
+        
+        template += s2r.getTemplate();
+        template += s2r.getObjectTemplate();
+        template += s2r.postObjectTemplate(primaryKey1.get(0), primaryColumnName, columns1, columns2);
+        template += s2r.deleteObjectTemplate(primaryKey1.get(0), primaryColumnName) ;
+        template += s2r.getClosingBracket();
 
         template = ps.processTemplate(template);
 

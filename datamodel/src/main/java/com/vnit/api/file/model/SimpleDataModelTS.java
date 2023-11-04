@@ -3,7 +3,9 @@ import java.util.List;
 import com.vnit.api.file.utility.Utility;
 import com.vnit.api.file.col_object.ColumnObject;
 import com.vnit.api.file.columnobjectlist.ColumnObjectList;
+import com.vnit.api.file.dbConnection.DBConnection;
 import static com.vnit.api.file.model.SimpleDataModel.nameCase;
+import com.vnit.api.file.utility.TestServlet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.Map;
 import main.java.com.vnit.api.file.t1Template.TSTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.t2Template.S2TSTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelTS {
@@ -256,14 +259,25 @@ public class SimpleDataModelTS {
         return input1;
     }
  
-    public String makeTSFile(String name) throws SQLException{
+    public String makeTSFile(String tableName) throws SQLException{
 //         this.table_name=name;
 //         List<ColumnObject> list=this.setTlist();
 //       return map.get("tspackage")+this.componentString()+this.ts1(list)+this.ts2(list)+this.ts3(list)+this.ts4(list)+this.ts5(list)+this.ts6(list);
   
-            ArrayList<Object> columns = DbUtility.columns;
-            String columnName = DbUtility.primaryKeyColumn;
-            return generateTSFile(columns, columnName);
+            DbUtility dbUtility = new DbUtility();
+            DBConnection dbConn = new DBConnection();
+  
+            try {
+                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }       
+
+
+            ArrayList<Object> columns = dbUtility.getColumns();
+            ArrayList<String> columnName = dbUtility.getPKColumns();
+            return generateTSFile(columns, columnName.get(0));
     
     }
      
@@ -284,6 +298,47 @@ public class SimpleDataModelTS {
         template += tsTemplate.getClosingBracket();
         template = ps.processTemplate(template);
 
+        return template;
+    }
+     
+     public String makeS2TSFile(ArrayList<String> tableNames) throws SQLException{//make controller file 
+            DbUtility dbUtility1 = new DbUtility();
+            DbUtility dbUtility2 = new DbUtility();
+
+            DBConnection dbConn = new DBConnection();
+            String tableName1 = tableNames.get(0);
+            String tableName2 = tableNames.get(1);
+            try {
+                dbUtility1.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility1.getColumns(tableName1, dbConn.setConnection(null));
+                
+                dbUtility2.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility2.getColumns(tableName2, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }
+
+            ArrayList<Object> columns1 = dbUtility1.getColumns();
+            ArrayList<String> PK1 = dbUtility1.getPKColumns();
+            
+            ArrayList<Object> columns2 = dbUtility2.getColumns();
+            ArrayList<String> PK2 = dbUtility2.getPKColumns();
+            return getS2TSTemplate(columns1, columns2, PK1);
+    }
+     
+    public String getS2TSTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1) {
+        ProcessSubstitution ps = new ProcessSubstitution();
+        S2TSTemplate s2ts = new S2TSTemplate();
+        
+        String template = "";
+        template += s2ts.getPart1(columns1, columns2);
+        template += s2ts.getPart3(PK1.get(0));
+        template += s2ts.getPart4(columns1, columns2);
+        template += s2ts.getEditData(PK1.get(0));
+        template += s2ts.getPart5(columns1, columns2, PK1);
+        template += s2ts.getPostDelete(PK1.get(0));
+
+        template = ps.processTemplate(template);
         return template;
     }
         
