@@ -21,12 +21,12 @@ import com.google.gson.JsonParser;
 import com.vnit.api.common.RestUtil;
 import com.vnit.api.entity.BillHeader;
 import com.vnit.api.entity.BillTypeMst;
-import com.vnit.api.entity.CourseMst;
 import com.vnit.api.entity.CustomerMst;
-import com.vnit.api.entity.DepartmentMst;
+import com.vnit.api.entity.DepttypeMst;
 import com.vnit.api.entity.EventmasterMst;
 import com.vnit.api.entity.ExamMst;
 import com.vnit.api.entity.ItemMst;
+import com.vnit.api.entity.PeopleMst;
 import com.vnit.api.entity.Scholar;
 import com.vnit.api.entity.ScreenHeader;
 import com.vnit.api.entity.ScreenMst;
@@ -49,6 +49,7 @@ import io.swagger.annotations.ApiResponse;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import main.java.com.vnit.api.file.model.SimpleDataModelApi;
 import main.java.com.vnit.api.file.utility.MapsUtil;
 import org.springframework.stereotype.Component;
 
@@ -99,6 +100,38 @@ public class CustomController {
 		return response.toString();
 	}
         
+        @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_people_list", produces = "application/json")
+	@ApiOperation(value = "Get people list", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getPeopleList(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		
+		List<PeopleMst> peopleList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(name)) {
+				query ="select * from people order by peopleid limit 10";
+				peopleList = em.createNativeQuery(query,PeopleMst.class).getResultList();
+			} else {
+				query ="select * from people where name like '%" + name + "%' order by peopleid desc limit 10";
+				peopleList = em.createNativeQuery(query,PeopleMst.class).getResultList();
+			}
+			
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(peopleList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		
+		return response.toString();
+	}
+        
         	@SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/get_student_list", produces = "application/json")
@@ -120,70 +153,6 @@ public class CustomController {
 			}
 			
 			response.add("data", JsonParser.parseString(mapper.writeValueAsString(studentList)));
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			response.add("data", new JsonArray());
-		}
-		
-		response.addProperty("code", 200);
-		response.addProperty("status", "Success");
-		
-		return response.toString();
-	}
-        
-                  @SuppressWarnings("unchecked")
-	@ResponseStatus(code = HttpStatus.OK)
-	@GetMapping(path = "/get_department_list", produces = "application/json")
-	@ApiOperation(value = "Get department list", httpMethod = "GET")
-	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
-	public String getDepartmentList(@RequestParam String name) {
-		JsonObject response = new JsonObject();
-		
-		List<DepartmentMst> departmentList = new ArrayList<>();
-		String query = "";
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			if (RestUtil.isNull(name)) {
-				query ="select * from department order by deptid limit 10";
-				departmentList = em.createNativeQuery(query, DepartmentMst.class).getResultList();
-			} else {
-				query ="select * from department where name like '%" + name + "%' order by deptid desc limit 10";
-				departmentList = em.createNativeQuery(query, DepartmentMst.class).getResultList();
-			}
-			
-			response.add("data", JsonParser.parseString(mapper.writeValueAsString(departmentList)));
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			response.add("data", new JsonArray());
-		}
-		
-		response.addProperty("code", 200);
-		response.addProperty("status", "Success");
-		
-		return response.toString();
-	}
-        
-                  @SuppressWarnings("unchecked")
-	@ResponseStatus(code = HttpStatus.OK)
-	@GetMapping(path = "/get_course_list", produces = "application/json")
-	@ApiOperation(value = "Get course list", httpMethod = "GET")
-	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
-	public String getCourseList(@RequestParam String name) {
-		JsonObject response = new JsonObject();
-		
-		List<CourseMst> courseList = new ArrayList<>();
-		String query = "";
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			if (RestUtil.isNull(name)) {
-				query ="select * from course order by courseid limit 10";
-				courseList = em.createNativeQuery(query, CourseMst.class).getResultList();
-			} else {
-				query ="select * from course where name like '%" + name + "%' order by courseid desc limit 10";
-				courseList = em.createNativeQuery(query, CourseMst.class).getResultList();
-			}
-			
-			response.add("data", JsonParser.parseString(mapper.writeValueAsString(courseList)));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			response.add("data", new JsonArray());
@@ -472,7 +441,6 @@ public class CustomController {
 				screenList = em.createNativeQuery(query).getResultList();
 //                                System.out.println(query);
                         }
-			System.out.println(query);
                                                      System.out.println("Screen List is of type : " + screenList.getClass());
 			response.add("data", JsonParser.parseString(mapper.writeValueAsString(screenList)));
 		} catch (Exception ex) {
@@ -687,7 +655,7 @@ public class CustomController {
 				query ="select * from scholar order by scholarid limit 10";
 				scholarList = em.createNativeQuery(query,Scholar.class).getResultList();
 			}else {
-				query ="select * from s cholar where scholarid like '%" + scholarid + "%' order by scholarid desc limit 10";
+				query ="select * from scholar where scholarid like '%" + scholarid + "%' order by scholarid desc limit 10";
 				scholarList = em.createNativeQuery(query,Scholar.class).getResultList();
 			}
 			
@@ -893,6 +861,37 @@ public class CustomController {
 	}
         
         @SuppressWarnings("unchecked")
+@ResponseStatus(code = HttpStatus.OK)
+@GetMapping(path = "/get_depttype_list", produces = "application/json")
+@ApiOperation(value = "Get depttype list", httpMethod = "GET")
+@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+public String getDepttypeList(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		List<DepttypeMst> depttypeList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(name)) {
+				query ="select * from depttype order by depttypeid limit 10";
+				depttypeList = em.createNativeQuery(query, DepttypeMst.class).getResultList();
+			} else {
+				query ="select * from depttype where name like '%" + name + "%' order by depttypeid desc limit 10";
+				depttypeList = em.createNativeQuery(query, DepttypeMst.class).getResultList();
+			}
+
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(depttypeList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+
+		return response.toString();
+}
+        
+        @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/get_component_list", produces = "application/json")
 	@ApiOperation(value = "Get component list", httpMethod = "GET")
@@ -996,7 +995,6 @@ public class CustomController {
 		return response.toString();
 	}
         
-    
         @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/get_basetablecolumn", produces = "application/json")
@@ -1039,10 +1037,22 @@ public class CustomController {
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModel s1=new SimpleDataModel(map);
                 
+                switch(getScreenType(screenname)) {
+                    case 1 :                
                             String tableName = getOneTableName(screenname);
                             response.addProperty("data", s1.makeEntity(tableName));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
+                            break;
+                            
+                   case 3 :                
+                            String S3TableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeEntity(S3TableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                }
+                
                 
                 return response.toString();
         }
@@ -1166,6 +1176,14 @@ public class CustomController {
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
+                            
+                    case 3 :
+                            String S3TableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeController(S3TableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                          
                 }
                 
                	return response.toString();
@@ -1195,6 +1213,14 @@ public class CustomController {
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                              break;
+                             
+                    case 3 : 
+                            String S3TableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeRepo(S3TableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                    
                 }
                 
             	return response.toString();
@@ -1226,6 +1252,13 @@ public class CustomController {
                             
                             break;
 
+                    case 3 : 
+                            String S3TableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeS3HtmlFile(S3TableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                    
                 }
                 
              	return response.toString();
@@ -1256,6 +1289,51 @@ public class CustomController {
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
+                            
+                    case 3 : 
+                            String S3TableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeS3TSFile(S3TableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                  
+            }
+                
+                    return response.toString();
+            }
+        
+        @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_api_file", produces = "application/json")
+	@ApiOperation(value = "Get api file", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getAPIFile(@RequestParam String screenname) throws SQLException {
+		JsonObject response = new JsonObject();
+          
+                      SimpleDataModelApi s1=new SimpleDataModelApi();
+                    
+                switch(getScreenType(screenname)) {
+                    case 1 : 
+                            String tableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeAPIFile(tableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                            
+                    case 2 :
+                            ArrayList<String> names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2APIFile(names));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                            
+                    case 3 : 
+                            String S3TableName = getOneTableName(screenname);
+                            response.addProperty("data", s1.makeAPIFile(S3TableName));
+                            response.addProperty("code", 200);
+                            response.addProperty("status", "Success");
+                            break;
+                    
             }
                 
                     return response.toString();

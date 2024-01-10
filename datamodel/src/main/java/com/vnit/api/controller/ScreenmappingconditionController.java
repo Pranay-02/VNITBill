@@ -36,20 +36,37 @@ public class ScreenmappingconditionController {
         Integer status = 0;
         JsonObject response = new JsonObject();
         JsonObject error = new JsonObject();
+        
+        System.out.println(body.getMasterQueryColumn() + " " + body.getDetailQueryColumn());
+        
         try {
             if (RestUtil.isNull(body.getScreenid())) {
                 error.addProperty("screenid", "screenid is required");
             }
-            if (RestUtil.isNull(body.getScreengroupid())) {
-                error.addProperty("screengroupid", "screengroupid is required");
+            if (RestUtil.isNull(body.getSourcegroupid())) {
+                error.addProperty("sourcegroupid", "sourcegroupid is required");
             }
-            if (RestUtil.isNull(body.getScreenfieldid())) {
-                error.addProperty("screenfieldid", "screenfieldid is required");
+            if (RestUtil.isNull(body.getDestgroupid())) {
+                error.addProperty("destgroupid", "destgroupid is required");
             }
-            if (RestUtil.isNull(body.getQuerycolumn())) {
-                error.addProperty("querycolumn", "querycolumn is required");
+            if (RestUtil.isNull(body.getMasterfieldid())) {
+                error.addProperty("masterfieldid", "masterfieldid is required");
             }
-
+            if (RestUtil.isNull(body.getDetailfieldid())) {
+                error.addProperty("detailfieldid", "detailfieldid is required");
+            }
+            if (RestUtil.isNull(body.getQuery())) {
+                error.addProperty("query", "query is required");
+            }
+            if(RestUtil.isNull(body.getMasterQueryColumn())) {
+                error.addProperty("masterquerycolumn", "masterquerycolumn is required");
+                System.out.println("masterquerycolumn");
+            }
+            if(RestUtil.isNull(body.getDetailQueryColumn())) {
+                error.addProperty("detailquerycolumn", "detailquerycolumn is required");
+                System.out.println("detailquerycolumn");
+            }
+            
             if (error.entrySet().isEmpty()) {
                 status = repo.postScreenmappingcondition(body);
             }

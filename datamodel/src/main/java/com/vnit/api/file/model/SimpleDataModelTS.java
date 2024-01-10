@@ -14,6 +14,7 @@ import main.java.com.vnit.api.file.t1Template.TSTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
 import main.java.com.vnit.api.file.t2Template.S2TSTemplate;
+import main.java.com.vnit.api.file.t3Template.S3TSTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelTS {
@@ -332,6 +333,7 @@ public class SimpleDataModelTS {
         
         String template = "";
         template += s2ts.getPart1(columns1, columns2);
+        template += s2ts.getAddRow(columns2, PK1);
         template += s2ts.getPart3(PK1.get(0));
         template += s2ts.getPart4(columns1, columns2);
         template += s2ts.getEditData(PK1.get(0));
@@ -342,4 +344,41 @@ public class SimpleDataModelTS {
         return template;
     }
         
+       public String makeS3TSFile(String tableName) throws SQLException{
+          DbUtility dbUtility = new DbUtility();
+            DBConnection dbConn = new DBConnection();
+  
+            try {
+                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }       
+
+
+            ArrayList<Object> columns = dbUtility.getColumns();
+            ArrayList<String> columnName = dbUtility.getPKColumns();
+            return generateS3TSFile(columns, columnName.get(0));
+    }
+       
+    public String generateS3TSFile(ArrayList<Object> columns, String primaryColumnName) {
+        ProcessSubstitution ps = new ProcessSubstitution();
+        S3TSTemplate s3ts = new S3TSTemplate();
+        
+        String template = "";
+        template += s3ts.getPart1();
+        template += s3ts.getPart2(columns);
+        template += s3ts.getPart3();
+        template += s3ts.getPart4(columns);
+        template += s3ts.getPart5(columns);
+        template += s3ts.getPart6();
+        template += s3ts.getRowData();
+        template += s3ts.getSave();
+        template += s3ts.getDelete(primaryColumnName);
+        template += s3ts.getClosingBracket();
+        
+        template = ps.processTemplate(template);
+        return template;
+    }
+ 
 }

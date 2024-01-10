@@ -3,25 +3,25 @@ package com.vnit.api.entity;
 import javax.persistence.Column;import javax.persistence.Entity;import javax.persistence.GeneratedValue;import javax.persistence.GenerationType;import javax.persistence.Id;import javax.persistence.Table;import io.swagger.annotations.ApiModelProperty;
 
 @Entity
-@Table(name="course")
-public class CourseMst {
+@Table(name="people")
+public class PeopleMst {
 
 @ApiModelProperty(required = false, value = "(10)")
 @Id
 @GeneratedValue(strategy=GenerationType.IDENTITY)
-@Column(name = "courseid")
-private int courseid;
+@Column(name = "peopleid")
+private int peopleid;
 
-public int getcourseid() {
-	return courseid;
+public int getpeopleid() {
+	return peopleid;
 }
 
-public void setcourseid ( int courseid) {
-	this.courseid = courseid;
+public void setpeopleid ( int peopleid) {
+	this.peopleid = peopleid;
 }
 
 
-@ApiModelProperty(required = true, value = "(50)")
+@ApiModelProperty(required = true, value = "(255)")
 @Column(name = "name")
 private String name;
 
@@ -34,16 +34,16 @@ public void setname ( String name) {
 }
 
 
-@ApiModelProperty(required = true, value = "(10)")
-@Column(name = "duration")
-private int duration;
+@ApiModelProperty(required = true, value = "(255)")
+@Column(name = "city")
+private String city;
 
-public int getduration() {
-	return duration;
+public String getcity() {
+	return city;
 }
 
-public void setduration ( int duration) {
-	this.duration = duration;
+public void setcity ( String city) {
+	this.city = city;
 }
 
 }

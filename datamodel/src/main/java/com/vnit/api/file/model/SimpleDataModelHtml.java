@@ -20,6 +20,7 @@ import main.java.com.vnit.api.file.t1Template.HTMLTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
 import main.java.com.vnit.api.file.t2Template.S2HtmlTemplate;
+import main.java.com.vnit.api.file.t3Template.S3HtmlTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
 
 public class SimpleDataModelHtml {
@@ -366,6 +367,62 @@ public class SimpleDataModelHtml {
         return template;
     }
    
+       public String makeS3HtmlFile(String tableName) throws SQLException{
+            DbUtility dbUtility = new DbUtility();
+            DBConnection dbConn = new DBConnection();
+  
+            try {
+                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+            } catch (SQLException ex) {
+                    System.out.println("****Error");
+            }        
+
+            ArrayList<Object> columns = dbUtility.getColumns();
+            return getS3HtmlTemplate(columns);
+   }
+       
+   public String getS3HtmlTemplate(ArrayList<Object> columns) {
+          ProcessSubstitution ps = new ProcessSubstitution();
+          S3HtmlTemplate s3html = new S3HtmlTemplate();
+
+        String template = "";
+
+        template += s3html.getFormPart1();
+        for(int i = 0; i < columns.size(); i++) {
+            template += s3html.getFormFragment1(columns.get(i).getColumnName());
+        }
+        template += s3html.getFormPart2();
+     
+        template += getS3HtmlTemplateHelper(columns);
+        template += s3html.getFormPart5();
+
+        template += s3html.getListingTablePart1();
+        template += getS3HtmlTemplateHelper(columns);
+        template += s3html.getListingTablePart2();
+        
+        template += s3html.getSaveCancelButton();
+
+        template = ps.processTemplate(template);
+        return template;
+   }
+   
+   public String getS3HtmlTemplateHelper(ArrayList<Object> columns) {
+        String template = "";
+          S3HtmlTemplate s3html = new S3HtmlTemplate();
+
+        template += s3html.getFormPart3();
+        for(int i = 0; i < columns.size(); i++) {
+            template += s3html.getFormFragment2(columns.get(i).getColumnName());
+        }
+
+        template += s3html.getFormPart4();
+        for(int i = 0; i < columns.size(); i++) {
+            template += s3html.getFormFragment3(columns.get(i).getColumnName());
+        }
+
+        return template;
+    }
 
    
 }

@@ -1,34 +1,38 @@
 package com.vnit.api.controller;
 
 import java.util.HashMap;import java.util.Map;import org.springframework.beans.factory.annotation.Autowired;import org.springframework.http.HttpStatus;import org.springframework.web.bind.annotation.CrossOrigin;import org.springframework.web.bind.annotation.DeleteMapping;import org.springframework.web.bind.annotation.GetMapping;import org.springframework.web.bind.annotation.PathVariable;import org.springframework.web.bind.annotation.PostMapping;import org.springframework.web.bind.annotation.RequestBody;import org.springframework.web.bind.annotation.ResponseStatus;import org.springframework.web.bind.annotation.RestController;import com.fasterxml.jackson.databind.ObjectMapper;import com.google.gson.JsonObject;import com.vnit.api.common.RestUtil;import io.swagger.annotations.ApiOperation;import io.swagger.annotations.ApiResponse;
-import com.vnit.api.entity.DepartmentMst;
-import com.vnit.api.repo.DepartmentRepo;
+import com.vnit.api.entity.DepttypeMst;
+import com.vnit.api.repo.DepttypeRepo;
 
 @CrossOrigin(origins="*", maxAge = 3600)
 @RestController
-public class DepartmentController {
+public class DepttypeController {
 
 	@Autowired
-	DepartmentRepo repo;
+	DepttypeRepo repo;
 
 	Map<String, String> map = new HashMap<>();
 
 	@ResponseStatus (code = HttpStatus.OK)
-	@PostMapping(path = "/post_department", produces = "application/json")
-	@ApiOperation(value = "Create or Update department entity", httpMethod = "POST")
+	@PostMapping(path = "/post_depttype", produces = "application/json")
+	@ApiOperation(value = "Create or Update depttype entity", httpMethod = "POST")
 	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
-	public String createDepartment(@RequestBody DepartmentMst body) {
+	public String createDepttype(@RequestBody DepttypeMst body) {
 
 		Integer status = 0;
 		JsonObject response = new JsonObject();
 		JsonObject error = new JsonObject();
 		try {
-			if(RestUtil.isNull(body.getname())) {
-				error.addProperty("name", "name is required");
+			if(RestUtil.isNull(body.getdeptid())) {
+				error.addProperty("deptid", "deptid is required");
+			}
+
+			if(RestUtil.isNull(body.getcourseid())) {
+				error.addProperty("courseid", "courseid is required");
 			}
 
 			if (error.entrySet().isEmpty()) {
-				status = repo.postDepartment(body);
+				status = repo.postDepttype(body);
 			}
 
 		} catch (Exception ex) {
@@ -50,21 +54,21 @@ public class DepartmentController {
 	}
 
 	@ResponseStatus (code = HttpStatus.OK)
-	@DeleteMapping(path = "/delete_department/{departmentid}", produces = "application/json")
-	@ApiOperation(value = "delete department entity", httpMethod = "DELETE")
+	@DeleteMapping(path = "/delete_depttype/{depttypeid}", produces = "application/json")
+	@ApiOperation(value = "delete depttype entity", httpMethod = "DELETE")
 	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
-	public String deleteDepartment(@PathVariable (name = "departmentid") Integer id) {
+	public String deleteDepttype(@PathVariable (name = "depttypeid") Integer id) {
 
 		Integer status = 0;
 		JsonObject response = new JsonObject();
 		JsonObject error = new JsonObject();
 		try {
 			if(RestUtil.isNull(id)) {
-				error.addProperty("id", "departmentid is required");
+				error.addProperty("id", "depttypeid is required");
 			}
 
 			if (error.entrySet().isEmpty()) {
-				status = repo.deleteDepartment(id);
+				status = repo.deleteDepttype(id);
 			}
 
 		} catch (Exception ex) {
@@ -85,21 +89,21 @@ public class DepartmentController {
 	}
 
 	@ResponseStatus (code = HttpStatus.OK)
-	@GetMapping(path = "/get_department/{departmentid}", produces = "application/json")
-	@ApiOperation(value = "get department entity", httpMethod = "GET")
+	@GetMapping(path = "/get_depttype/{depttypeid}", produces = "application/json")
+	@ApiOperation(value = "get depttype entity", httpMethod = "GET")
 	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
-	public String getDepartment(@PathVariable(name = "departmentid") Integer id) {
+	public String getDepttype(@PathVariable(name = "depttypeid") Integer id) {
 
 		JsonObject response = new JsonObject();
 		JsonObject error = new JsonObject();
 		try {
 			if(RestUtil.isNull(id)) {
-				error.addProperty("id", "departmentid is required");
+				error.addProperty("id", "depttypeid is required");
 			}
 
 			if (error.entrySet().isEmpty()) {
 				ObjectMapper mapper = new ObjectMapper();
-				return mapper.writeValueAsString(repo.getDepartment(id));
+				return mapper.writeValueAsString(repo.getDepttype(id));
 			}
 
 		} catch (Exception ex) {

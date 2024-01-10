@@ -46,11 +46,8 @@ public String getPart1(ArrayList<Object> columns1, ArrayList<Object> columns2) {
             "\t}\n\n" +
 
             "onRefresh() {\n" + 
-                "\tif (this.router.url === '/^$00$01$m:constantsMap:table_name1$^-entry') {\n" +
-                  "\t\tthis.FORM_TYPE = \"BE\"\n" +  
-                "\t}\n" + 
-                "\tif (this.router.url === '/^$00$01$m:constantsMap:table_name1$^-entry-with-^$00$01$m:constantsMap:table_name1$^-type') {\n" + 
-                  "\t\tthis.FORM_TYPE = \"BEWT\"\n" +
+                "\tif (this.router.url === '/^$00$01$m:constantsMap:table_name1$^') {\n" +
+                  "\t\tthis.FORM_TYPE = \"^$00$01$m:constantsMap:table_name1$^\"\n" +  
                 "\t}\n\n" + 
             
                 "\tthis.ACTION_FLAG = \"\"\n" +
@@ -82,6 +79,33 @@ public String getPart1(ArrayList<Object> columns1, ArrayList<Object> columns2) {
 
         return temp;
     }
+    
+    public String getAddRow(ArrayList<Object> columns2, ArrayList<String> PK1) {
+        String temp = "";
+        String columnName = "";
+        
+        for(int i = 0; i < columns2.size(); i++) {
+            if(columns2.get(i).getColumnPrimaryKey() && !PK1.contains(columns2.get(i).getColumnName())) {
+                columnName = columns2.get(i).getColumnName();
+            }
+        }
+        
+        
+        temp += "addRow() {\n" +
+                "\tif (this.modelTwoArray.length !== 0) {\n" +
+                  "\t\tif (this.configService.isNullUndefined(this.modelTwoArray[this.modelTwoArray.length - 1]['" + columnName + "']) === false) {\n" +
+                    "\t\t\tthis.notificationServices.showNotification('error', \"Row already added\");\n" +
+                    "\t\t\treturn;\n" +
+                  "\t\t}\n" +
+                "\t}\n\n" +
+                
+                "\tvar json: any = {} = Object.assign({}, this.model_two);\n" +
+                "\tthis.modelTwoArray.push(json)\n" +
+                "\tthis.clearModelTwo();\n" +
+              "}\n\n" ;
+        
+        return temp;
+    }
 
     public String getPart3(String columnName) {
         String temp = "";
@@ -97,21 +121,6 @@ public String getPart1(ArrayList<Object> columns1, ArrayList<Object> columns2) {
             "searchByFilter() {\n" + 
             "\t\tthis.getModelList(this.filters)\n" + 
             "}\n\n"+
-
-            "addRow() {\n" +
-                "\tif (this.modelTwoArray.length !== 0) {\n" +
-                  "\t\tif (this.configService.isNullUndefined(this.modelTwoArray[this.modelTwoArray.length - 1]['" + columnName + "']) === false) {\n" +
-                    "\t\t\tthis.notificationServices.showNotification('error', \"Row already added\");\n" +
-                    "\t\t\treturn;\n" +
-                  "\t\t}\n" +
-                "\t}\n" +
-                "\tconsole.log(JSON.stringify(this.model_two));\n" +
-                
-                "\tvar json: any = {} = Object.assign({}, this.model_two);\n" +
-                "\tthis.modelTwoArray.push(json)\n" +
-                "\tconsole.log(JSON.stringify(this.modelTwoArray));\n" +
-                "\tthis.clearModelTwo();\n" +
-              "}\n\n" + 
 
               "async deleteRowData(data, index) {\n" + 
                 "\tawait this.modelTwoArray.splice(index, 1)\n" + 
