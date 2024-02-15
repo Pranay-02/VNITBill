@@ -1,5 +1,6 @@
 package com.vnit.api.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,10 @@ import com.google.gson.JsonParser;
 import com.vnit.api.common.RestUtil;
 import com.vnit.api.entity.BillHeader;
 import com.vnit.api.entity.BillTypeMst;
+import com.vnit.api.entity.CourseMst;
 import com.vnit.api.entity.CustomerMst;
+import com.vnit.api.entity.Department;
+import com.vnit.api.entity.DeptdtlMst;
 import com.vnit.api.entity.DepttypeMst;
 import com.vnit.api.entity.EventmasterMst;
 import com.vnit.api.entity.ExamMst;
@@ -195,6 +199,38 @@ public class CustomController {
 		
 		return response.toString();
 	}
+        
+        @SuppressWarnings("unchecked")
+@ResponseStatus(code = HttpStatus.OK)
+@GetMapping(path = "/get_course_list", produces = "application/json")
+@ApiOperation(value = "Get course list", httpMethod = "GET")
+@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+public String getCourseList(@RequestParam String name) {
+		JsonObject response = new JsonObject();
+		List<CourseMst> courseList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(name)) {
+				query ="select * from course order by courseid limit 10";
+				courseList = em.createNativeQuery(query, CourseMst.class).getResultList();
+			} else {
+				query ="select * from course where name like '%" + name + "%' order by courseid desc limit 10";
+				courseList = em.createNativeQuery(query, CourseMst.class).getResultList();
+			}
+
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(courseList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+
+		return response.toString();
+}
+
         
                   @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
@@ -545,7 +581,7 @@ public class CustomController {
 	@GetMapping(path = "/get_screenfieldlist", produces = "application/json")
 	@ApiOperation(value = "Get screenfieldlist", httpMethod = "GET")
 	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
-	public String getScreenField_1(@RequestParam Integer screenID) {
+	public String getScreenField_1(@RequestParam Integer screenID, Integer screengroupID) {
 		JsonObject response = new JsonObject();
 		List screenfieldList = new ArrayList<>();
 		String query = "";
@@ -555,7 +591,7 @@ public class CustomController {
 				query ="select screenfieldid,label from screenfieldmaster order by screenfieldid";
 				screenfieldList = em.createNativeQuery(query).getResultList();
 			} else {
-				query ="select screenfieldid,label from screenfieldmaster where screenid like '%" + screenID + "%' order by screenfieldid";
+				query ="select screenfieldid,label from screenfieldmaster where screenid like '%" + screenID + "%' and screengroupid = " + screengroupID + " order by screenfieldid";
 				screenfieldList = em.createNativeQuery(query).getResultList();
 			}
 			
@@ -706,7 +742,7 @@ public class CustomController {
 		
 		return response.toString();
 	}
-	
+        	
 	@SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/item_list_by_bill_type", produces = "application/json")
@@ -859,8 +895,44 @@ public class CustomController {
 		
 		return response.toString();
 	}
-        
-        @SuppressWarnings("unchecked")
+
+              @SuppressWarnings("unchecked")
+@ResponseStatus(code = HttpStatus.OK)
+@GetMapping(path = "/get_department_list", produces = "application/json")
+@ApiOperation(value = "Get Department list", httpMethod = "GET")
+@ApiResponse(code = 200, message = "Returns a 200 response code if successfull")
+public String getDepartmentList(@RequestParam String deptid) {
+		JsonObject response = new JsonObject();
+		List<Department> departmentList = new ArrayList<>();
+		String query = "";
+		try {
+			if (RestUtil.isNull(deptid)) {
+				query ="select * from department order by deptid limit 10";
+				departmentList = em.createNativeQuery(query, Department.class).getResultList();
+			}else {
+				query ="select * from department where deptid like '%" + deptid + "%' order by deptid desc limit 10";
+				departmentList = em.createNativeQuery(query, Department.class).getResultList();
+			}
+
+			JsonArray departmentArray = new JsonArray();
+                                                     
+			for (Department department : departmentList) {
+                                                                departmentArray.add(JsonParser.parseString(department.toString()));
+                                                                
+			}
+			response.add("data", departmentArray);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+
+		return response.toString();
+}
+
+@SuppressWarnings("unchecked")
 @ResponseStatus(code = HttpStatus.OK)
 @GetMapping(path = "/get_depttype_list", produces = "application/json")
 @ApiOperation(value = "Get depttype list", httpMethod = "GET")
@@ -890,8 +962,45 @@ public String getDepttypeList(@RequestParam String name) {
 
 		return response.toString();
 }
-        
-        @SuppressWarnings("unchecked")
+
+
+
+@SuppressWarnings("unchecked")
+@ResponseStatus(code = HttpStatus.OK)
+@GetMapping(path = "/courseid_by_depttp", produces = "application/json")
+@ApiOperation(value = "Get courseid by depttp", httpMethod = "GET")
+@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+public String getcourseidBydepttp(@RequestParam String type) {
+		JsonObject response = new JsonObject();
+		String status = "Failed";
+
+		List<CourseMst> courseList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+                try {
+			if (RestUtil.isNull(type)) {
+				response.add("data", new JsonArray());
+				response.addProperty("error", "'type' is required");
+			} else {
+				query = "select c.courseid, c.coursename, c.credits from course c, depttype d where c.courseid = d.courseid and d.depttp = " + type + ";"; 
+				courseList = em.createNativeQuery(query,CourseMst.class).getResultList();
+				response.add("data", JsonParser.parseString(mapper.writeValueAsString(courseList)));
+				status = "Success";
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+
+		response.addProperty("code", 200);
+		response.addProperty("status", status);
+		return response.toString();
+	}
+
+
+
+
+                @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/get_component_list", produces = "application/json")
 	@ApiOperation(value = "Get component list", httpMethod = "GET")
@@ -1044,13 +1153,6 @@ public String getDepttypeList(@RequestParam String name) {
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
-                            
-                   case 3 :                
-                            String S3TableName = getOneTableName(screenname);
-                            response.addProperty("data", s1.makeEntity(S3TableName));
-                            response.addProperty("code", 200);
-                            response.addProperty("status", "Success");
-                            break;
                 }
                 
                 
@@ -1178,8 +1280,8 @@ public String getDepttypeList(@RequestParam String name) {
                             break;
                             
                     case 3 :
-                            String S3TableName = getOneTableName(screenname);
-                            response.addProperty("data", s1.makeController(S3TableName));
+                            ArrayList<String> s3names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Controller(s3names));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1215,8 +1317,8 @@ public String getDepttypeList(@RequestParam String name) {
                              break;
                              
                     case 3 : 
-                            String S3TableName = getOneTableName(screenname);
-                            response.addProperty("data", s1.makeRepo(S3TableName));
+                            ArrayList<String> s3names = getTwoTableName(screenname);
+                            response.addProperty("data", s1.makeS2Repo(s3names));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1253,8 +1355,9 @@ public String getDepttypeList(@RequestParam String name) {
                             break;
 
                     case 3 : 
-                            String S3TableName = getOneTableName(screenname);
-                            response.addProperty("data", s1.makeS3HtmlFile(S3TableName));
+                            ArrayList<String> s3names = getTwoTableName(screenname);
+                            ScreenmappingconditionMst  mappingObject = getScreenMappingCondition(screenname);
+                            response.addProperty("data", s1.makeS3HtmlFile(s3names, mappingObject));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1291,8 +1394,9 @@ public String getDepttypeList(@RequestParam String name) {
                             break;
                             
                     case 3 : 
-                            String S3TableName = getOneTableName(screenname);
-                            response.addProperty("data", s1.makeS3TSFile(S3TableName));
+                            ArrayList<String> s3names = getTwoTableName(screenname);
+                            ScreenmappingconditionMst  mappingObject = getScreenMappingCondition(screenname);
+                            response.addProperty("data", s1.makeS3TSFile(s3names, mappingObject));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1328,8 +1432,9 @@ public String getDepttypeList(@RequestParam String name) {
                             break;
                             
                     case 3 : 
-                            String S3TableName = getOneTableName(screenname);
-                            response.addProperty("data", s1.makeAPIFile(S3TableName));
+                            ArrayList<String> S3TableNames = getTwoTableName(screenname);
+                            ScreenmappingconditionMst  mappingObject = getScreenMappingCondition(screenname);
+                            response.addProperty("data", s1.makeS3APIFile(S3TableNames, mappingObject));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1342,6 +1447,12 @@ public String getDepttypeList(@RequestParam String name) {
         private int getScreenType(String screenName) {
              ScreenMst screen = getScreenObject(screenName);
              int x = screen.getScreentype();
+             return x;
+        }
+        
+        private int getScreenId(String screenName) {
+            ScreenMst screen = getScreenObject(screenName);
+             int x = screen.getScreenid();
              return x;
         }
         
@@ -1380,4 +1491,48 @@ public String getDepttypeList(@RequestParam String name) {
         private ScreenMst getScreenObject(String screenName) {
             return ScreenController.map1.get(screenName);
         } 
+        
+        private ScreenmappingconditionMst getScreenMappingCondition(String screenName) {
+                int screenid = getScreenId(screenName);
+                ScreenmappingconditionMst obj = getScreenMappingConditionObject(screenid);
+                return obj;
+        }
+        
+        public ScreenmappingconditionMst getScreenMappingConditionObject(int screenid)  {
+                    JsonObject response = new JsonObject();
+                    List<String> conditionList = new ArrayList<>();
+                    String query = "";
+                    ObjectMapper mapper = new ObjectMapper();
+                    ScreenmappingconditionMst obj = new ScreenmappingconditionMst();
+                    
+                    try {
+                                    query ="select screenid, screenmappingid, sourcegroupid, destgroupid, "
+                                            + "masterfieldid, detailfieldid, masterquerycolumn, detailquerycolumn, mappingtable "
+                                            + "query from screenmappingcondition where screenid = " + screenid + ";";
+                                    
+                                    conditionList = em.createNativeQuery(query).getResultList();
+                                    System.out.println("json string = " + JsonParser.parseString(mapper.writeValueAsString(conditionList.get(0))));
+                                    
+                                    response.add("data", JsonParser.parseString(mapper.writeValueAsString(conditionList.get(0))));
+                                    JsonNode jsonNode = mapper.readTree(response.get("data").toString());
+                                    
+                                    obj.setScreenid(jsonNode.get(0).asInt());
+                                    obj.setScreenmappingid(jsonNode.get(1).asInt());
+                                    obj.setSourcegroupid(jsonNode.get(2).asInt());
+                                    obj.setDestgroupid(jsonNode.get(3).asInt());
+                                    obj.setMasterfieldid(jsonNode.get(4).asInt());
+                                    obj.setDetailfieldid(jsonNode.get(5).asInt());
+                                    obj.setMasterquerycolumn(jsonNode.get(6).asText());
+                                    obj.setDetailquerycolumn(jsonNode.get(7).asText());
+                                    obj.setMappingtable(jsonNode.get(8).asText());
+                                    obj.setQuery(jsonNode.get(9).asText());
+
+                    
+                    } catch (Exception ex) {
+                            ex.printStackTrace();
+                            response.add("data", new JsonArray());
+                    }
+
+                    return obj;
+        }
 }

@@ -36,9 +36,7 @@ public class ScreenmappingconditionController {
         Integer status = 0;
         JsonObject response = new JsonObject();
         JsonObject error = new JsonObject();
-        
-        System.out.println(body.getMasterQueryColumn() + " " + body.getDetailQueryColumn());
-        
+       
         try {
             if (RestUtil.isNull(body.getScreenid())) {
                 error.addProperty("screenid", "screenid is required");
@@ -65,6 +63,9 @@ public class ScreenmappingconditionController {
             if(RestUtil.isNull(body.getDetailQueryColumn())) {
                 error.addProperty("detailquerycolumn", "detailquerycolumn is required");
                 System.out.println("detailquerycolumn");
+            }
+            if (RestUtil.isNull(body.getMappingtable())) {
+                error.addProperty("mappingtable", "mappingtable is required");
             }
             
             if (error.entrySet().isEmpty()) {

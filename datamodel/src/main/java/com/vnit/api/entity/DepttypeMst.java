@@ -22,15 +22,15 @@ public void setdepttypeid ( int depttypeid) {
 
 
 @ApiModelProperty(required = true, value = "(10)")
-@Column(name = "deptid")
-private int deptid;
+@Column(name = "depttp")
+private int depttp;
 
-public int getdeptid() {
-	return deptid;
+public int getdepttp() {
+	return depttp;
 }
 
-public void setdeptid ( int deptid) {
-	this.deptid = deptid;
+public void setdepttp ( int depttp) {
+	this.depttp = depttp;
 }
 
 

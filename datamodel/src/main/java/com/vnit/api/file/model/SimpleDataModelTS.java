@@ -1,4 +1,5 @@
 package com.vnit.api.file.model;
+import com.vnit.api.entity.ScreenmappingconditionMst;
 import java.util.List;
 import com.vnit.api.file.utility.Utility;
 import com.vnit.api.file.col_object.ColumnObject;
@@ -344,38 +345,47 @@ public class SimpleDataModelTS {
         return template;
     }
         
-       public String makeS3TSFile(String tableName) throws SQLException{
-          DbUtility dbUtility = new DbUtility();
+       public String makeS3TSFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj) throws SQLException{
+          DbUtility dbUtility1 = new DbUtility();
+            DbUtility dbUtility2 = new DbUtility();
+
             DBConnection dbConn = new DBConnection();
-  
+            String tableName1 = tableNames.get(0);
+            String tableName2 = tableNames.get(1);
             try {
-                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
-                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+                dbUtility1.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility1.getColumns(tableName1, dbConn.setConnection(null));
+                
+                dbUtility2.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility2.getColumns(tableName2, dbConn.setConnection(null));
             } catch (SQLException ex) {
                     System.out.println("****Error");
-            }       
+            }
 
-
-            ArrayList<Object> columns = dbUtility.getColumns();
-            ArrayList<String> columnName = dbUtility.getPKColumns();
-            return generateS3TSFile(columns, columnName.get(0));
+            ArrayList<Object> columns1 = dbUtility1.getColumns();
+            ArrayList<String> PK1 = dbUtility1.getPKColumns();
+            
+            ArrayList<Object> columns2 = dbUtility2.getColumns();
+            ArrayList<String> PK2 = dbUtility2.getPKColumns();
+            return generateS3TSFile(columns1, columns2, PK1, mappingObj);
     }
        
-    public String generateS3TSFile(ArrayList<Object> columns, String primaryColumnName) {
+    public String generateS3TSFile(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1, ScreenmappingconditionMst mappingObj) {
         ProcessSubstitution ps = new ProcessSubstitution();
         S3TSTemplate s3ts = new S3TSTemplate();
         
+        String col1 = mappingObj.getMasterQueryColumn();
+        String col2 = mappingObj.getDetailQueryColumn();
+        
         String template = "";
-        template += s3ts.getPart1();
-        template += s3ts.getPart2(columns);
-        template += s3ts.getPart3();
-        template += s3ts.getPart4(columns);
-        template += s3ts.getPart5(columns);
-        template += s3ts.getPart6();
-        template += s3ts.getRowData();
-        template += s3ts.getSave();
-        template += s3ts.getDelete(primaryColumnName);
-        template += s3ts.getClosingBracket();
+        template += s3ts.getPart1(columns1, columns2);
+        template += s3ts.getPart3(PK1.get(0));
+        template += s3ts.getMappingPart1(col1, col2, columns2, PK1.get(0)); // col1, col2
+        template += s3ts.getPart4(columns1, columns2);
+        template += s3ts.getEditData(PK1.get(0));
+        template += s3ts.getPart9(PK1.get(0));
+        template += s3ts.getPart5(columns1, columns2, PK1);
+        template += s3ts.getPostDelete(PK1.get(0));
         
         template = ps.processTemplate(template);
         return template;

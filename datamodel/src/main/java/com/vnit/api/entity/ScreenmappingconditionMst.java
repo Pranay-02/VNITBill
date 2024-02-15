@@ -45,6 +45,10 @@ public class ScreenmappingconditionMst {
     @Column(name = "query")
     private String query;
             
+    @ApiModelProperty(required = true, value = "(size = 255) (required)")
+    @Column(name = "mappingtable")
+    private String mappingtable;
+   
     @ApiModelProperty(required = false, value = "(Primary Key)")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,7 +106,7 @@ public class ScreenmappingconditionMst {
         return query;
     }
     
-    public void setMasterQueryColumn(String masterquerycolumn) {
+    public void setMasterquerycolumn(String masterquerycolumn) {
         this.masterquerycolumn = masterquerycolumn;
     }
     
@@ -110,13 +114,22 @@ public class ScreenmappingconditionMst {
         return masterquerycolumn;
     }
     
-    public void setDetailQueryColumn(String detailquerycolumn) {
+    public void setDetailquerycolumn(String detailquerycolumn) {
         this.detailquerycolumn = detailquerycolumn;
     }
     
     public String getDetailQueryColumn() {
         return detailquerycolumn;
     }
+    
+       public String getMappingtable() {
+        return mappingtable;
+    }
+
+    public void setMappingtable(String mappingtable) {
+        this.mappingtable = mappingtable;
+    }
+ 
     
     public void setScreenmappingid(Integer screenmappingid) {
         this.screenmappingid = screenmappingid;

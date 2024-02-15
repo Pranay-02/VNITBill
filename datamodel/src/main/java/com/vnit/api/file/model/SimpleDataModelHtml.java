@@ -1,5 +1,6 @@
 package com.vnit.api.file.model;
 
+import com.vnit.api.entity.ScreenmappingconditionMst;
 import java.util.List;
 import com.vnit.api.file.utility.Utility;
 import com.vnit.api.file.col_object.ColumnObject;
@@ -367,62 +368,44 @@ public class SimpleDataModelHtml {
         return template;
     }
    
-       public String makeS3HtmlFile(String tableName) throws SQLException{
-            DbUtility dbUtility = new DbUtility();
+       public String makeS3HtmlFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj) throws SQLException{
+            DbUtility dbUtility1 = new DbUtility();
+            DbUtility dbUtility2 = new DbUtility();
+
             DBConnection dbConn = new DBConnection();
-  
+            String tableName1 = tableNames.get(0);
+            String tableName2 = tableNames.get(1);
             try {
-                dbUtility.fillMap(TestServlet.contextpath + "properties.txt");
-                dbUtility.getColumns(tableName, dbConn.setConnection(null));
+                dbUtility1.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility1.getColumns(tableName1, dbConn.setConnection(null));
+                
+                dbUtility2.fillMap(TestServlet.contextpath + "properties.txt");
+                dbUtility2.getColumns(tableName2, dbConn.setConnection(null));
             } catch (SQLException ex) {
                     System.out.println("****Error");
-            }        
+            }
 
-            ArrayList<Object> columns = dbUtility.getColumns();
-            return getS3HtmlTemplate(columns);
+            ArrayList<Object> columns1 = dbUtility1.getColumns();
+            ArrayList<String> PK1 = dbUtility1.getPKColumns();
+            
+            ArrayList<Object> columns2 = dbUtility2.getColumns();
+            ArrayList<String> PK2 = dbUtility2.getPKColumns();
+            return getS3HtmlTemplate(columns1, columns2, PK1, mappingObj);
    }
        
-   public String getS3HtmlTemplate(ArrayList<Object> columns) {
+   public String getS3HtmlTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1, ScreenmappingconditionMst mappingObj) {
           ProcessSubstitution ps = new ProcessSubstitution();
           S3HtmlTemplate s3html = new S3HtmlTemplate();
 
+          String col1 = mappingObj.getMasterQueryColumn();
+          
         String template = "";
 
-        template += s3html.getFormPart1();
-        for(int i = 0; i < columns.size(); i++) {
-            template += s3html.getFormFragment1(columns.get(i).getColumnName());
-        }
-        template += s3html.getFormPart2();
-     
-        template += getS3HtmlTemplateHelper(columns);
-        template += s3html.getFormPart5();
-
-        template += s3html.getListingTablePart1();
-        template += getS3HtmlTemplateHelper(columns);
-        template += s3html.getListingTablePart2();
-        
-        template += s3html.getSaveCancelButton();
-
+        template += s3html.getFormPart1(columns1, col1); //col1
+        template += s3html.getFormPart5(columns2, PK1);
+        template += s3html.getFormPart2(columns1);
+        template += s3html.getSaveDelete();
         template = ps.processTemplate(template);
         return template;
    }
-   
-   public String getS3HtmlTemplateHelper(ArrayList<Object> columns) {
-        String template = "";
-          S3HtmlTemplate s3html = new S3HtmlTemplate();
-
-        template += s3html.getFormPart3();
-        for(int i = 0; i < columns.size(); i++) {
-            template += s3html.getFormFragment2(columns.get(i).getColumnName());
-        }
-
-        template += s3html.getFormPart4();
-        for(int i = 0; i < columns.size(); i++) {
-            template += s3html.getFormFragment3(columns.get(i).getColumnName());
-        }
-
-        return template;
-    }
-
-   
 }
