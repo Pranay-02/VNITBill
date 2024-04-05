@@ -1,5 +1,7 @@
 package com.vnit.api.file.model;
 
+import com.vnit.api.entity.ScreenlistHdrMst;
+import com.vnit.api.entity.ScreenlistdtlMst;
 import com.vnit.api.entity.ScreenmappingconditionMst;
 import java.util.List;
 import com.vnit.api.file.utility.Utility;
@@ -20,6 +22,7 @@ import java.util.logging.Logger;
 import main.java.com.vnit.api.file.t1Template.HTMLTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.screenListTemplate.ScreenListHtmlTemplate;
 import main.java.com.vnit.api.file.t2Template.S2HtmlTemplate;
 import main.java.com.vnit.api.file.t3Template.S3HtmlTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
@@ -330,7 +333,7 @@ public class SimpleDataModelHtml {
 
     }
     
-    public String makeS2HtmlFile(ArrayList<String> tableNames) throws SQLException{//make controller file 
+    public String makeS2HtmlFile(ArrayList<String> tableNames, List<ScreenlistHdrMst> listHeaders) throws SQLException{//make controller file 
             DbUtility dbUtility1 = new DbUtility();
             DbUtility dbUtility2 = new DbUtility();
 
@@ -352,14 +355,39 @@ public class SimpleDataModelHtml {
             
             ArrayList<Object> columns2 = dbUtility2.getColumns();
             ArrayList<String> PK2 = dbUtility2.getPKColumns();
-            return getS2HtmlTemplate(columns1, columns2, PK1);
+            return getS2HtmlTemplate(columns1, columns2, PK1, listHeaders);
     }
     
-    public String getS2HtmlTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1) {
+    public String getS2HtmlTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1,
+    List<ScreenlistHdrMst> listHeaders) {
         ProcessSubstitution ps = new ProcessSubstitution();
         S2HtmlTemplate s2html = new S2HtmlTemplate();
+        ScreenListHtmlTemplate listTemplate = new ScreenListHtmlTemplate();
         
-        String template = s2html.getFormPart1(columns1);
+        String template = s2html.getFormPart1();
+        
+         for(int i = 0; i < columns1.size(); i++) {
+                if(columns1.get(i).getColumnPrimaryKey()) continue;
+                
+                String columnName = columns1.get(i).getColumnName();
+                
+                for(ScreenlistHdrMst header : listHeaders) {
+                    List<ScreenlistdtlMst> details = header.getScreenlistdtl();
+                    for(ScreenlistdtlMst detail : details) {
+    
+                        if(detail.getQuerycol().equals(columnName)) {
+                                template += listTemplate.getS2Template(columnName, header.getListname());
+                        }
+                        else {
+                            template += s2html.getFormPart8(columnName);
+
+                        }
+                    }
+                }
+         }
+                       
+        
+        template += s2html.getFortPart11();
         template += s2html.getFormPart5(columns2, PK1);
         template += s2html.getFormPart2(columns1);
         template += s2html.getSaveDelete();
@@ -368,7 +396,8 @@ public class SimpleDataModelHtml {
         return template;
     }
    
-       public String makeS3HtmlFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj) throws SQLException{
+       public String makeS3HtmlFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj,
+               List<ScreenlistHdrMst> listHeaders) throws SQLException{
             DbUtility dbUtility1 = new DbUtility();
             DbUtility dbUtility2 = new DbUtility();
 
@@ -390,18 +419,43 @@ public class SimpleDataModelHtml {
             
             ArrayList<Object> columns2 = dbUtility2.getColumns();
             ArrayList<String> PK2 = dbUtility2.getPKColumns();
-            return getS3HtmlTemplate(columns1, columns2, PK1, mappingObj);
+            return getS3HtmlTemplate(columns1, columns2, PK1, mappingObj, listHeaders);
    }
        
-   public String getS3HtmlTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1, ScreenmappingconditionMst mappingObj) {
+   public String getS3HtmlTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, 
+           ArrayList<String> PK1, ScreenmappingconditionMst mappingObj, List<ScreenlistHdrMst> listHeaders) {
           ProcessSubstitution ps = new ProcessSubstitution();
           S3HtmlTemplate s3html = new S3HtmlTemplate();
+          ScreenListHtmlTemplate listTemplate = new ScreenListHtmlTemplate();
+
 
           String col1 = mappingObj.getMasterQueryColumn();
           
         String template = "";
 
-        template += s3html.getFormPart1(columns1, col1); //col1
+        template += s3html.getFormPart1(); 
+        
+            for(int i = 0; i < columns1.size(); i++) {
+                if(columns1.get(i).getColumnPrimaryKey()) continue;
+              
+                String columnName = columns1.get(i).getColumnName();
+                
+                for(ScreenlistHdrMst header : listHeaders) {
+                    List<ScreenlistdtlMst> details = header.getScreenlistdtl();
+                    for(ScreenlistdtlMst detail : details) {
+    
+                        if(detail.getQuerycol().equals(columnName)) {
+                                template += listTemplate.getS3Template(columnName, col1, header.getListname());
+                        }
+                        else {
+                            template += s3html.getFormPart8(columnName, col1);
+
+                        }
+                    }
+                }
+            }
+        
+        template += s3html.getFormPart11();
         template += s3html.getFormPart5(columns2, PK1);
         template += s3html.getFormPart2(columns1);
         template += s3html.getSaveDelete();

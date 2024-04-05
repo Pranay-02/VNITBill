@@ -5,16 +5,20 @@
  */
 package main.java.com.vnit.api.file.model;
 
+import com.vnit.api.entity.ScreenlistHdrMst;
+import com.vnit.api.entity.ScreenlistHeader;
 import com.vnit.api.entity.ScreenmappingconditionMst;
 import com.vnit.api.file.dbConnection.DBConnection;
 import com.vnit.api.file.utility.TestServlet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import main.java.com.vnit.api.file.t1Template.ApiTemplate;
 import main.java.com.vnit.api.file.t2Template.S2ApiFunction;
 import main.java.com.vnit.api.file.utility.DbUtility;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.screenListTemplate.ScreenListAPITemplate;
 import main.java.com.vnit.api.file.t3Template.S3ApiTemplate;
 
 /**
@@ -53,7 +57,7 @@ public class SimpleDataModelApi {
 
     }
     
-     public String makeS2APIFile(ArrayList<String> tableNames) throws SQLException {
+     public String makeS2APIFile(ArrayList<String> tableNames, List<ScreenlistHdrMst> listHeaders) throws SQLException {
             DbUtility dbUtility1 = new DbUtility();
             DbUtility dbUtility2 = new DbUtility();
 
@@ -75,22 +79,29 @@ public class SimpleDataModelApi {
             
             ArrayList<Object> columns2 = dbUtility2.getColumns();
             ArrayList<String> PK2 = dbUtility2.getPKColumns();
-            return getS2ApiTemplate(PK1);
+            return getS2ApiTemplate(PK1, listHeaders);
     }
     
-    public String getS2ApiTemplate(ArrayList<String> PK1) {
+    public String getS2ApiTemplate(ArrayList<String> PK1, List<ScreenlistHdrMst> listHeaders) {
         String template = "";
         ProcessSubstitution ps = new ProcessSubstitution();
         S2ApiFunction s2api = new S2ApiFunction();
+        ScreenListAPITemplate listTemplate = new ScreenListAPITemplate();
         
         template += s2api.getTemplate(PK1.get(0));
+        
+        for(ScreenlistHdrMst header : listHeaders) {
+            template += listTemplate.getTemplate(header.getQuery(), header.getJfunction(), header.getListname());
+        }
         
        template = ps.processTemplate(template);
        return template;
 
     } 
     
-    public String makeS3APIFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj) throws SQLException {
+    public String makeS3APIFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj,
+            List<ScreenlistHdrMst> listHeaders) throws SQLException {
+            
             DbUtility dbUtility1 = new DbUtility();
             DbUtility dbUtility2 = new DbUtility();
 
@@ -112,13 +123,14 @@ public class SimpleDataModelApi {
             
             ArrayList<Object> columns2 = dbUtility2.getColumns();
             ArrayList<String> PK2 = dbUtility2.getPKColumns();
-            return getS3ApiTemplate(PK1, mappingObj);
+            return getS3ApiTemplate(PK1, mappingObj, listHeaders);
     }
     
-    public String getS3ApiTemplate(ArrayList<String> PK1, ScreenmappingconditionMst mappingObj) {
+    public String getS3ApiTemplate(ArrayList<String> PK1, ScreenmappingconditionMst mappingObj, List<ScreenlistHdrMst> listHeaders) {
         String template = "";
         ProcessSubstitution ps = new ProcessSubstitution();
         S3ApiTemplate s3api = new S3ApiTemplate();
+        ScreenListAPITemplate listTemplate = new ScreenListAPITemplate();
         
         String col1 = mappingObj.getMasterQueryColumn();
         String col2 = mappingObj.getDetailQueryColumn();
@@ -127,6 +139,10 @@ public class SimpleDataModelApi {
         
         template += s3api.getFunction1(PK1.get(0));
         template += s3api.getFunction2(col1, col2, query, mappingTable);
+        
+        for(ScreenlistHdrMst header : listHeaders) {
+            template += listTemplate.getTemplate(header.getQuery(), header.getJfunction(), header.getListname());
+        }
         
        template = ps.processTemplate(template);
        return template;

@@ -13,7 +13,7 @@ import main.java.com.vnit.api.file.col_object.Object;
  * @author Pranay Singhal
  */
 public class S2HtmlTemplate {
-    public String getFormPart1(ArrayList<Object> columns1) {
+    public String getFormPart1() {
     String temp = "";
     temp+="<div class=\"card card-default\">\n"+
             "\t<br>\n"+
@@ -28,19 +28,19 @@ public class S2HtmlTemplate {
                         "\t\t\t\t\t</legend>\n"+
                         "\t\t\t\t\t<div class=\"col-md-12\">\n"+
                         "\t\t\t\t\t\t<div class=\"row\">\n";
-                          
-                        for(int i = 0; i < columns1.size(); i++) {
-                            if(columns1.get(i).getColumnPrimaryKey()) continue;
-                            temp += getFormPart8(columns1.get(i).getColumnName());
-                        }
-                     
-                        temp += "\t\t\t\t\t</div>\n"+
+                        
+            return temp;
+    }
+    
+    public String getFortPart11() {
+        String temp = "";
+           temp += "\t\t\t\t\t</div>\n"+
                     "\t\t\t\t\t</div>\n"+
                     "\t\t\t\t\t</fieldset>\n"+
                 "\t\t\t\t</div>\n"+
             "\t\t\t</div>\n\n\n";
 
-            return temp;
+           return temp;
     }
 
     public String getFormPart8(String columnName) {
@@ -50,16 +50,18 @@ public class S2HtmlTemplate {
                "\t\t\t\t\t\t\t\t\t\t" + columnName + "\n"+
                 "\t\t\t\t\t\t\t\t\t\t<span style=\"color: red;\">*</span>\n"+
             "\t\t\t\t\t\t\t\t\t</label>\n"+
-            "\t\t\t\t\t\t\t\t\t<div class=\"form-group\">\n"+
-                "\t\t\t\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control input-sm\" id=\"" + columnName +"\" name=\""+ columnName + "\"\n"+
+            "\t\t\t\t\t\t\t\t\t<div class=\"form-group\">\n";
+        
+        temp +=  "\t\t\t\t\t\t\t\t\t\t<input type=\"text\" class=\"form-control input-sm\" id=\"" + columnName +"\" name=\""+ columnName + "\"\n"+
                     "\t\t\t\t\t\t\t\t\t\t\t[(ngModel)]=\"model." + columnName +"\" #" +  columnName +"=\"ngModel\" placeholder=\"" +  columnName+ "\"\n"+
-                    "\t\t\t\t\t\t\t\t\t\t\tmaxlength=\"20\" pTooltip=\"{{model."+ columnName + "}}\" tooltipPosition=\"bottom\">\n"+
-            "\t\t\t\t\t\t\t\t\t</div>\n"+
+                    "\t\t\t\t\t\t\t\t\t\t\tmaxlength=\"255\" pTooltip=\"{{model."+ columnName + "}}\" tooltipPosition=\"bottom\">\n";
+                
+         temp += "\t\t\t\t\t\t\t\t\t</div>\n"+
         "\t\t\t\t\t\t\t</div>\n\n";
 
         return temp;
     }
-
+    
     public String getFormPart5(ArrayList<Object> columns2, ArrayList<String> PK1) {
         String temp = "";
 

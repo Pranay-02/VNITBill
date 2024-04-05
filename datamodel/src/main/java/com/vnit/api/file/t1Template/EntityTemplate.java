@@ -28,7 +28,7 @@ public class EntityTemplate {
 
     public String getFieldFragments(String columnName) {
         String temp = "\n";
-      
+      //iterative start
         temp += "@ApiModelProperty(required = ^00$01$m2:fld:" + columnName + ":required$^,"; 
         temp += " value = \"(^00$01$m2:fld:" + columnName +":size$^)\")\n";
 
@@ -46,7 +46,7 @@ public class EntityTemplate {
                 "\tthis.^00$01$m2:fld:" + columnName + ":column_name$^ = ^00$01$m2:fld:" + columnName + ":column_name$^;\n";
         
         temp += "}\n\n";
-
+//iterative end
         return temp;
     }
 

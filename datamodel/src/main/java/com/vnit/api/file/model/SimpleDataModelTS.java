@@ -1,4 +1,5 @@
 package com.vnit.api.file.model;
+import com.vnit.api.entity.ScreenlistHdrMst;
 import com.vnit.api.entity.ScreenmappingconditionMst;
 import java.util.List;
 import com.vnit.api.file.utility.Utility;
@@ -14,6 +15,7 @@ import java.util.Map;
 import main.java.com.vnit.api.file.t1Template.TSTemplate;
 import main.java.com.vnit.api.file.utility.ProcessSubstitution;
 import main.java.com.vnit.api.file.col_object.Object;
+import main.java.com.vnit.api.file.screenListTemplate.ScreenListTSTemplate;
 import main.java.com.vnit.api.file.t2Template.S2TSTemplate;
 import main.java.com.vnit.api.file.t3Template.S3TSTemplate;
 import main.java.com.vnit.api.file.utility.DbUtility;
@@ -303,7 +305,7 @@ public class SimpleDataModelTS {
         return template;
     }
      
-     public String makeS2TSFile(ArrayList<String> tableNames) throws SQLException{//make controller file 
+     public String makeS2TSFile(ArrayList<String> tableNames, List<ScreenlistHdrMst> listHeaders) throws SQLException{//make controller file 
             DbUtility dbUtility1 = new DbUtility();
             DbUtility dbUtility2 = new DbUtility();
 
@@ -325,17 +327,24 @@ public class SimpleDataModelTS {
             
             ArrayList<Object> columns2 = dbUtility2.getColumns();
             ArrayList<String> PK2 = dbUtility2.getPKColumns();
-            return getS2TSTemplate(columns1, columns2, PK1);
+            return getS2TSTemplate(columns1, columns2, PK1, listHeaders);
     }
      
-    public String getS2TSTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1) {
+    public String getS2TSTemplate(ArrayList<Object> columns1, ArrayList<Object> columns2, 
+            ArrayList<String> PK1, List<ScreenlistHdrMst> listHeaders) {
         ProcessSubstitution ps = new ProcessSubstitution();
         S2TSTemplate s2ts = new S2TSTemplate();
+        ScreenListTSTemplate listTemplate = new ScreenListTSTemplate();
         
         String template = "";
-        template += s2ts.getPart1(columns1, columns2);
+        template += s2ts.getPart1(columns1, columns2, listHeaders);
         template += s2ts.getAddRow(columns2, PK1);
         template += s2ts.getPart3(PK1.get(0));
+        
+        for(ScreenlistHdrMst list : listHeaders) {
+            template += listTemplate.getListDetails2(list.getListname(), list.getJfunction());
+        }
+        
         template += s2ts.getPart4(columns1, columns2);
         template += s2ts.getEditData(PK1.get(0));
         template += s2ts.getPart5(columns1, columns2, PK1);
@@ -345,7 +354,8 @@ public class SimpleDataModelTS {
         return template;
     }
         
-       public String makeS3TSFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj) throws SQLException{
+       public String makeS3TSFile(ArrayList<String> tableNames, ScreenmappingconditionMst mappingObj, 
+               List<ScreenlistHdrMst> listHeaders) throws SQLException{
           DbUtility dbUtility1 = new DbUtility();
             DbUtility dbUtility2 = new DbUtility();
 
@@ -367,20 +377,28 @@ public class SimpleDataModelTS {
             
             ArrayList<Object> columns2 = dbUtility2.getColumns();
             ArrayList<String> PK2 = dbUtility2.getPKColumns();
-            return generateS3TSFile(columns1, columns2, PK1, mappingObj);
+            return generateS3TSFile(columns1, columns2, PK1, mappingObj, listHeaders);
     }
        
-    public String generateS3TSFile(ArrayList<Object> columns1, ArrayList<Object> columns2, ArrayList<String> PK1, ScreenmappingconditionMst mappingObj) {
+    public String generateS3TSFile(ArrayList<Object> columns1, ArrayList<Object> columns2, 
+            ArrayList<String> PK1, ScreenmappingconditionMst mappingObj, List<ScreenlistHdrMst> listHeaders) {
         ProcessSubstitution ps = new ProcessSubstitution();
         S3TSTemplate s3ts = new S3TSTemplate();
+        ScreenListTSTemplate listTemplate = new ScreenListTSTemplate();
+
         
         String col1 = mappingObj.getMasterQueryColumn();
         String col2 = mappingObj.getDetailQueryColumn();
         
         String template = "";
-        template += s3ts.getPart1(columns1, columns2);
+        template += s3ts.getPart1(columns1, columns2, listHeaders);
         template += s3ts.getPart3(PK1.get(0));
         template += s3ts.getMappingPart1(col1, col2, columns2, PK1.get(0)); // col1, col2
+        
+        for(ScreenlistHdrMst list : listHeaders) {
+            template += listTemplate.getListDetails2(list.getListname(), list.getJfunction());
+        }
+        
         template += s3ts.getPart4(columns1, columns2);
         template += s3ts.getEditData(PK1.get(0));
         template += s3ts.getPart9(PK1.get(0));

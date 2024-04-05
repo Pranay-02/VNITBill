@@ -5,7 +5,9 @@
  */
 package main.java.com.vnit.api.file.t3Template;
 
+import com.vnit.api.entity.ScreenlistHdrMst;
 import java.util.ArrayList;
+import java.util.List;
 import main.java.com.vnit.api.file.col_object.Object;
 
 /**
@@ -15,7 +17,7 @@ import main.java.com.vnit.api.file.col_object.Object;
 
 public class S3TSTemplate {
   
-  public String getPart1(ArrayList<Object> columns1, ArrayList<Object> columns2) {
+  public String getPart1(ArrayList<Object> columns1, ArrayList<Object> columns2, List<ScreenlistHdrMst> listHeaders) {
     String temp = "";
     temp += "^00$01$m:constantsMap:s2ts_imports$^" + "\n\n";
 
@@ -29,8 +31,14 @@ public class S3TSTemplate {
         "\tmodel: any = {}\n"+
         "\tmodel_two: any = {}\n"+
         "\tmodelTwoArray: any = [];\n"+
-        "\tmodelList = []\n"+
-        "\tsearchFromFilter: boolean = false;\n"+
+        "\tmodelList = []\n";
+    
+          for(ScreenlistHdrMst header : listHeaders) {
+                    temp += "\t" + header.getListname() + " = []\n";    
+            }
+            
+    
+        temp += "\tsearchFromFilter: boolean = false;\n"+
         "\tfilters = \"\"\n\n" +
 
         "\tFORM_TYPE = \"\";\n" +
@@ -65,12 +73,25 @@ public class S3TSTemplate {
             temp += "\t}\n\n" + 
             "\tthis.modelTwoArray = []\n" + 
             "\tthis.modelList = []\n" + 
-            "\tthis.getModelList(\"\")\n"+
+            "\tthis.getModelList(\"\")\n";
             
-            "}\n\n";
+             for(ScreenlistHdrMst header : listHeaders) {
+                    temp += getListDetails1(header.getListname());
+              }
+             
+            temp += "}\n\n";
 
     return temp;
 }
+  
+  public String getListDetails1(String listname) {
+        String temp = "";
+        
+            temp +=  "\tthis." + listname +" = []\n" + 
+                        "\tthis.get" + listname + "(\"\")\n\n";
+
+        return temp;
+    }
 
 public String getPart2(ArrayList<Object> columns) {
     String temp = "";

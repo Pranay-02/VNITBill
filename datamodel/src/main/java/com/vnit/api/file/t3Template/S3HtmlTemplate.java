@@ -14,7 +14,7 @@ import main.java.com.vnit.api.file.col_object.Object;
 
 public class S3HtmlTemplate {
     
-        public String getFormPart1(ArrayList<Object> columns1, String col1) {
+        public String getFormPart1() {
             String temp = "";
             temp+="<div class=\"card card-default\">\n"+
             "\t<br>\n"+
@@ -29,20 +29,20 @@ public class S3HtmlTemplate {
                         "\t\t\t\t\t</legend>\n"+
                         "\t\t\t\t\t<div class=\"col-md-12\">\n"+
                         "\t\t\t\t\t\t<div class=\"row\">\n";
-                          
-                        for(int i = 0; i < columns1.size(); i++) {
-                            if(columns1.get(i).getColumnPrimaryKey()) continue;
-                            temp += getFormPart8(columns1.get(i).getColumnName(), col1);
-                        }
-                     
-                        temp += "\t\t\t\t\t</div>\n"+
+                        
+            return temp;
+    }
+        
+        public String getFormPart11() {
+            String temp = "";
+            temp += "\t\t\t\t\t</div>\n"+
                     "\t\t\t\t\t</div>\n"+
                     "\t\t\t\t\t</fieldset>\n"+
                 "\t\t\t\t</div>\n"+
             "\t\t\t</div>\n\n\n";
-
+             
             return temp;
-    }
+        }
 
     public String getFormPart8(String columnName, String col1) {
         String temp = "";

@@ -38,7 +38,9 @@ import com.vnit.api.entity.ScreeneventMst;
 import com.vnit.api.entity.ScreenfieldmasterMst;
 import com.vnit.api.entity.ScreengroupMst;
 import com.vnit.api.entity.ScreenjoinconditionMst;
+import com.vnit.api.entity.ScreenlistHdrMst;
 import com.vnit.api.entity.ScreenlistHeader;
+import com.vnit.api.entity.ScreenlistdtlMst;
 import com.vnit.api.entity.ScreenmappingconditionMst;
 import com.vnit.api.entity.ScreenmappingqueryMst;
 import com.vnit.api.entity.StudentMst;
@@ -578,10 +580,10 @@ public String getCourseList(@RequestParam String name) {
         
         @SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
-	@GetMapping(path = "/get_screenfieldlist", produces = "application/json")
-	@ApiOperation(value = "Get screenfieldlist", httpMethod = "GET")
+	@GetMapping(path = "/get_screenfieldlist_from_screengroup", produces = "application/json")
+	@ApiOperation(value = "Get screenfieldlist from screengroup", httpMethod = "GET")
 	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
-	public String getScreenField_1(@RequestParam Integer screenID, Integer screengroupID) {
+	public String getScreenFieldFromScreengroup(@RequestParam Integer screenID, Integer screengroupID) {
 		JsonObject response = new JsonObject();
 		List screenfieldList = new ArrayList<>();
 		String query = "";
@@ -606,7 +608,39 @@ public String getCourseList(@RequestParam String name) {
 		
 		return response.toString();
 	}
-	
+
+        @SuppressWarnings("unchecked")
+	@ResponseStatus(code = HttpStatus.OK)
+	@GetMapping(path = "/get_screenfieldlist", produces = "application/json")
+	@ApiOperation(value = "Get screenfieldlist", httpMethod = "GET")
+	@ApiResponse(code = 200, message = "Returns a 200 response code if successful")
+	public String getScreenField_1(@RequestParam Integer screenID) {
+		JsonObject response = new JsonObject();
+		List screenfieldList = new ArrayList<>();
+		String query = "";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			if (RestUtil.isNull(screenID)) {
+				query ="select screenfieldid,label from screenfieldmaster order by screenfieldid";
+				screenfieldList = em.createNativeQuery(query).getResultList();
+			} else {
+				query ="select screenfieldid,label from screenfieldmaster where screenid like '%" + screenID + "' order by screenfieldid";
+				screenfieldList = em.createNativeQuery(query).getResultList();
+			}
+			
+			response.add("data", JsonParser.parseString(mapper.writeValueAsString(screenfieldList)));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.add("data", new JsonArray());
+		}
+		
+		response.addProperty("code", 200);
+		response.addProperty("status", "Success");
+		
+		return response.toString();
+	}
+
+        
 	@SuppressWarnings("unchecked")
 	@ResponseStatus(code = HttpStatus.OK)
 	@GetMapping(path = "/get_item_list", produces = "application/json")
@@ -1337,6 +1371,9 @@ public String getcourseidBydepttp(@RequestParam String type) {
 		JsonObject response = new JsonObject();
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModelHtml s1=new SimpleDataModelHtml(map);
+                int screenid = getScreenId(screenname);
+                List<ScreenlistHdrMst> listHeaders = getRequiredScreenLists(screenid);
+                
                 
                  switch(getScreenType(screenname)) {
                     case 1 : 
@@ -1348,7 +1385,7 @@ public String getcourseidBydepttp(@RequestParam String type) {
                             
                     case 2 :
                             ArrayList<String> names = getTwoTableName(screenname);
-                            response.addProperty("data", s1.makeS2HtmlFile(names));
+                            response.addProperty("data", s1.makeS2HtmlFile(names, listHeaders));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             
@@ -1357,7 +1394,7 @@ public String getcourseidBydepttp(@RequestParam String type) {
                     case 3 : 
                             ArrayList<String> s3names = getTwoTableName(screenname);
                             ScreenmappingconditionMst  mappingObject = getScreenMappingCondition(screenname);
-                            response.addProperty("data", s1.makeS3HtmlFile(s3names, mappingObject));
+                            response.addProperty("data", s1.makeS3HtmlFile(s3names, mappingObject, listHeaders));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1377,7 +1414,11 @@ public String getcourseidBydepttp(@RequestParam String type) {
 		JsonObject response = new JsonObject();
                 Map<String,String> map=new HashMap<>();
                 SimpleDataModelTS s1=new SimpleDataModelTS(map);
-                    
+                
+                int screenid = getScreenId(screenname);
+                // pass a list of screenlistdtl where screen id is mapped
+                List<ScreenlistHdrMst> listHeaders = getRequiredScreenLists(screenid);
+                
                 switch(getScreenType(screenname)) {
                     case 1 : 
                             String tableName = getOneTableName(screenname);
@@ -1388,7 +1429,8 @@ public String getcourseidBydepttp(@RequestParam String type) {
                             
                     case 2 :
                             ArrayList<String> names = getTwoTableName(screenname);
-                            response.addProperty("data", s1.makeS2TSFile(names));
+                            
+                            response.addProperty("data", s1.makeS2TSFile(names, listHeaders));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1396,7 +1438,7 @@ public String getcourseidBydepttp(@RequestParam String type) {
                     case 3 : 
                             ArrayList<String> s3names = getTwoTableName(screenname);
                             ScreenmappingconditionMst  mappingObject = getScreenMappingCondition(screenname);
-                            response.addProperty("data", s1.makeS3TSFile(s3names, mappingObject));
+                            response.addProperty("data", s1.makeS3TSFile(s3names, mappingObject, listHeaders));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1414,7 +1456,9 @@ public String getcourseidBydepttp(@RequestParam String type) {
 	public String getAPIFile(@RequestParam String screenname) throws SQLException {
 		JsonObject response = new JsonObject();
           
-                      SimpleDataModelApi s1=new SimpleDataModelApi();
+                SimpleDataModelApi s1=new SimpleDataModelApi();
+                List<ScreenlistHdrMst> screenlistHeaders = getScreenlistHeaders();
+
                     
                 switch(getScreenType(screenname)) {
                     case 1 : 
@@ -1426,7 +1470,7 @@ public String getcourseidBydepttp(@RequestParam String type) {
                             
                     case 2 :
                             ArrayList<String> names = getTwoTableName(screenname);
-                            response.addProperty("data", s1.makeS2APIFile(names));
+                            response.addProperty("data", s1.makeS2APIFile(names, screenlistHeaders));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1434,7 +1478,7 @@ public String getcourseidBydepttp(@RequestParam String type) {
                     case 3 : 
                             ArrayList<String> S3TableNames = getTwoTableName(screenname);
                             ScreenmappingconditionMst  mappingObject = getScreenMappingCondition(screenname);
-                            response.addProperty("data", s1.makeS3APIFile(S3TableNames, mappingObject));
+                            response.addProperty("data", s1.makeS3APIFile(S3TableNames, mappingObject, screenlistHeaders));
                             response.addProperty("code", 200);
                             response.addProperty("status", "Success");
                             break;
@@ -1535,4 +1579,87 @@ public String getcourseidBydepttp(@RequestParam String type) {
 
                     return obj;
         }
+        
+        public List<ScreenlistHdrMst> getScreenlistHeaders()  {
+                    JsonObject response = new JsonObject();
+                    List<String> headerList = new ArrayList<>();
+                    String query = "";
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<ScreenlistHdrMst> list = new ArrayList<>();
+                    
+                    try {
+                                    query ="select screenlistid, query, jfunction, listname from screenlisthdr;";
+                                    headerList = em.createNativeQuery(query).getResultList();
+                                    
+                                    for(String header : headerList) {
+                                            response.add("data", JsonParser.parseString(mapper.writeValueAsString(header)));
+                                            JsonNode jsonNode = mapper.readTree(response.get("data").toString());
+
+                                            ScreenlistHdrMst obj = new ScreenlistHdrMst();
+                                            obj.setScreenlistid(jsonNode.get(0).asInt());
+                                            obj.setQuery(jsonNode.get(1).asText());
+                                            obj.setJfunction(jsonNode.get(2).asText());
+                                            obj.setListname(jsonNode.get(3).asText());
+                                            obj.setScreenlistdtl(getScreenlistDetails(jsonNode.get(0).asInt()));
+                                            
+                                            list.add(obj);
+                                    }
+                    } catch (Exception ex) {
+                            ex.printStackTrace();
+                            response.add("data", new JsonArray());
+                    }
+
+                    return list;
+        }
+        
+         public List<ScreenlistdtlMst> getScreenlistDetails(int screenlistId)  {
+                    JsonObject response = new JsonObject();
+                    List<String> detailList = new ArrayList<>();
+                    String query = "";
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<ScreenlistdtlMst> list = new ArrayList<>();
+                    
+                    try {
+                                    query ="select screenid, querycol, screenfieldid from screenlistdtl"
+                                            + "where screenlistid = " + screenlistId + ";";
+                                    detailList = em.createNativeQuery(query).getResultList();
+                                    
+                                    for(String detail : detailList) {
+                                            response.add("data", JsonParser.parseString(mapper.writeValueAsString(detail)));
+                                            JsonNode jsonNode = mapper.readTree(response.get("data").toString());
+
+                                            ScreenlistdtlMst obj = new ScreenlistdtlMst();
+                                            obj.setScreenid(jsonNode.get(0).asInt());
+                                            obj.setQuerycol(jsonNode.get(1).asText());
+                                            obj.setScreenfieldid(jsonNode.get(2).asInt());
+
+                                            list.add(obj);
+                                    }
+                    } catch (Exception ex) {
+                            ex.printStackTrace();
+                            response.add("data", new JsonArray());
+                    }
+
+                    return list;
+        }
+         
+         private List<ScreenlistHdrMst> getRequiredScreenLists(int screenid) {
+
+            List<ScreenlistHdrMst> screenlistHeaders = getScreenlistHeaders();
+            List<ScreenlistHdrMst> requiredHeaders = new ArrayList<>();
+                    
+                for(ScreenlistHdrMst header : screenlistHeaders) {
+                    List<ScreenlistdtlMst> listDetails = header.getScreenlistdtl();
+
+                    for(ScreenlistdtlMst detail : listDetails) {
+
+                        if(detail.getScreenid() == screenid) {
+                            requiredHeaders.add(header);
+                        }
+                    }
+                }
+                
+                return requiredHeaders;
+         }
+        
 }
